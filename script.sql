@@ -9,6 +9,10 @@ GO
 
 
 --ME FIJO SI EXISTE LA TABLA, EN CASO DE NO EXISTIR HAGO UN DROP Y LUEGO LA CREO (POR SI METEMOS CAMBIOS)
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].orden_trabajo') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].orden_trabajo
+	GO
+
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].camion') AND type = 'U')
 	DROP TABLE [SQL_NOOBS].camion
 	GO
@@ -177,5 +181,16 @@ CREATE TABLE SQL_NOOBS.camion (
 	numero_chasis nvarchar(255) NULL,
 	numero_motor nvarchar(255) NULL,
 	fecha_alta datetime2(3) NULL
+)
+GO
+
+CREATE TABLE SQL_NOOBS.orden_trabajo (
+	id INT NOT NULL PRIMARY KEY IDENTITY(1, 1),
+	camion_id nvarchar(255) FOREIGN KEY
+	REFERENCES [SQL_NOOBS].camion(patente)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+	fecha nvarchar(255) NULL,
+	estado nvarchar(255) NULL
 )
 GO
