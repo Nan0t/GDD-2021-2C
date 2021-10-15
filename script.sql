@@ -9,6 +9,10 @@ GO
 
 
 --ME FIJO SI EXISTE LA TABLA, EN CASO DE NO EXISTIR HAGO UN DROP Y LUEGO LA CREO (POR SI METEMOS CAMBIOS)
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].tareaXorden_trabajo') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].tareaXorden_trabajo
+	GO
+
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].orden_trabajo') AND type = 'U')
 	DROP TABLE [SQL_NOOBS].orden_trabajo
 	GO
@@ -192,5 +196,26 @@ CREATE TABLE SQL_NOOBS.orden_trabajo (
 	ON UPDATE CASCADE,
 	fecha nvarchar(255) NULL,
 	estado nvarchar(255) NULL
+)
+GO
+
+CREATE TABLE SQL_NOOBS.tareaXorden_trabajo (
+	tarea_id int FOREIGN KEY
+	REFERENCES [SQL_NOOBS].tarea(codigo)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+	orden_trabajo_id int FOREIGN KEY
+	REFERENCES [SQL_NOOBS].orden_trabajo(id)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+	macanico_dni decimal FOREIGN KEY
+	REFERENCES [SQL_NOOBS].mecanico(dni)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+	fecha_inicio_real datetime2(3) NULL,
+	tiempo_real_dias int NULL,
+	fecha_fin_real datetime2(3) NULL,
+	fecha_inicio_planificado datetime2(3) NULL
+
 )
 GO
