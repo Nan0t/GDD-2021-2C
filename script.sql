@@ -9,8 +9,44 @@ GO
 
 
 --ME FIJO SI EXISTE LA TABLA, EN CASO DE NO EXISTIR HAGO UN DROP Y LUEGO LA CREO (POR SI METEMOS CAMBIOS)
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].mecanico') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].mecanico
+	GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].tarea') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].tarea
+	GO
+
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].material') AND type = 'U')
 	DROP TABLE [SQL_NOOBS].material
+	GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].tipo_tarea') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].tipo_tarea
+	GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].taller') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].taller
+	GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].modelo') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].modelo
+	GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].recorrido') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].recorrido
+	GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].chofer') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].chofer
+	GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].tipo_paquete') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].tipo_paquete
+	GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].tarea') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].tarea
 	GO
 
 
@@ -20,20 +56,11 @@ CREATE TABLE SQL_NOOBS.material (
 	precio decimal(18,2) NULL
 )
 
-
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].tipo_tarea') AND type = 'U')
-	DROP TABLE [SQL_NOOBS].tipo_tarea
-	GO
-
 	
 CREATE TABLE SQL_NOOBS.tipo_tarea (
 	id int NOT NULL IDENTITY(1, 1) PRIMARY KEY,  --IDENTITY se usa para autoincrementar el valor de id al agregar nuevas filas
 	tipo_tarea_descripcion nvarchar(255) NULL
 )
-
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].taller') AND type = 'U')
-	DROP TABLE [SQL_NOOBS].taller
-	GO
 
 	
 CREATE TABLE SQL_NOOBS.taller (
@@ -45,9 +72,6 @@ CREATE TABLE SQL_NOOBS.taller (
 	ciudad nvarchar(255) NULL
 )
 
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].modelo') AND type = 'U')
-	DROP TABLE [SQL_NOOBS].modelo
-	GO
 
 	
 CREATE TABLE SQL_NOOBS.modelo (
@@ -59,10 +83,6 @@ CREATE TABLE SQL_NOOBS.modelo (
 	marca_camion nvarchar(255) NULL
 )
 
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].recorrido') AND type = 'U')
-	DROP TABLE [SQL_NOOBS].recorrido
-	GO
-
 	
 CREATE TABLE SQL_NOOBS.recorrido (
 	id int NOT NULL IDENTITY(1, 1) PRIMARY KEY,  
@@ -73,10 +93,6 @@ CREATE TABLE SQL_NOOBS.recorrido (
 	combustible decimal(18,2) NULL
 )
 
-
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].chofer') AND type = 'U')
-	DROP TABLE [SQL_NOOBS].chofer
-	GO
 
 CREATE TABLE SQL_NOOBS.chofer (
 	dni decimal(18,0) NOT NULL PRIMARY KEY,  
@@ -90,9 +106,6 @@ CREATE TABLE SQL_NOOBS.chofer (
 	costo_hora int NULL
 )
 
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].tipo_paquete') AND type = 'U')
-	DROP TABLE [SQL_NOOBS].tipo_paquete
-	GO
 
 CREATE TABLE SQL_NOOBS.tipo_paquete (
 	id int NOT NULL IDENTITY(1, 1) PRIMARY KEY,  
@@ -104,13 +117,30 @@ CREATE TABLE SQL_NOOBS.tipo_paquete (
 	precio decimal(18,2) NULL
 )
 
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].tarea') AND type = 'U')
-	DROP TABLE [SQL_NOOBS].tarea
-	GO
 
 CREATE TABLE SQL_NOOBS.tarea (
 	codigo int NOT NULL PRIMARY KEY,  
-	tipo_tarea_id int FOREIGN KEY REFERENCES [SQL_NOOBS].tipo_tarea(id),
 	tiempo_estimado_dias int NULL,
-	descripcion_tarea nvarchar(255) NULL
+	descripcion_tarea nvarchar(255) NULL,
+	tipo_tarea_id int FOREIGN KEY
+	REFERENCES [SQL_NOOBS].tipo_tarea(id)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE
+)
+
+
+CREATE TABLE SQL_NOOBS.mecanico (
+	dni decimal(18,0) NOT NULL PRIMARY KEY,  
+	nombre nvarchar(255) NULL,
+	apellido nvarchar(255) NULL,
+	direccion nvarchar(255) NULL,
+	telefono int NULL,
+	mail nvarchar(255) NULL,
+	fecha_nacimiento datetime2(3) NULL,
+	legajo int NULL,
+	costo_hora int NULL,
+	taller_id int FOREIGN KEY 
+	REFERENCES [SQL_NOOBS].taller(id)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE
 )
