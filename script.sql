@@ -264,3 +264,21 @@ CREATE TABLE SQL_NOOBS.paquete (
 
 )
 GO
+
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[alta_material]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE [SQL_NOOBS].alta_material
+GO
+
+CREATE PROCEDURE SQL_NOOBS.alta_material
+AS
+BEGIN 
+	INSERT INTO SQL_NOOBS.material (cod, descripcion, precio)
+		SELECT 
+			DISTINCT MATERIAL_COD, MATERIAL_DESCRIPCION, MATERIAL_PRECIO
+		FROM 
+			gd_esquema.Maestra
+		WHERE MATERIAL_COD IS NOT NULL
+END
+GO
+
+EXEC [SQL_NOOBS].alta_material
