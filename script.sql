@@ -1,0 +1,26 @@
+USE [GD2C2021]
+GO
+
+IF NOT EXISTS ( SELECT * FROM sys.schemas WHERE name = 'SQL_NOOBS')
+BEGIN
+	EXECUTE('CREATE SCHEMA SQL_NOOBS')
+END
+GO
+
+
+--ME FIJO SI EXISTE LA TABLA, EN CASO DE NO EXISTIR HAGO UN DROP Y LUEGO LA CREO (POR SI METEMOS CAMBIOS)
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].material') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].material
+	GO
+
+
+CREATE TABLE SQL_NOOBS.material (
+	cod nvarchar(100) NOT NULL PRIMARY KEY,
+	descripcion nvarchar(255) NULL,
+	precio decimal(18,2) NULL
+)
+
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].material') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].material
+	GO
