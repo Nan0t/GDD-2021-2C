@@ -9,6 +9,14 @@ GO
 
 
 --ME FIJO SI EXISTE LA TABLA, EN CASO DE NO EXISTIR HAGO UN DROP Y LUEGO LA CREO (POR SI METEMOS CAMBIOS)
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].paquete') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].paquete
+	GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].viaje') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].viaje
+	GO
+
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].tareaXorden_trabajo') AND type = 'U')
 	DROP TABLE [SQL_NOOBS].tareaXorden_trabajo
 	GO
@@ -208,7 +216,7 @@ CREATE TABLE SQL_NOOBS.tareaXorden_trabajo (
 	REFERENCES [SQL_NOOBS].orden_trabajo(id)
 	ON DELETE CASCADE
 	ON UPDATE CASCADE,
-	macanico_dni decimal FOREIGN KEY
+	macanico_dni decimal(18,0) FOREIGN KEY
 	REFERENCES [SQL_NOOBS].mecanico(dni)
 	ON DELETE CASCADE
 	ON UPDATE CASCADE,
@@ -216,6 +224,43 @@ CREATE TABLE SQL_NOOBS.tareaXorden_trabajo (
 	tiempo_real_dias int NULL,
 	fecha_fin_real datetime2(3) NULL,
 	fecha_inicio_planificado datetime2(3) NULL
+
+)
+GO
+
+CREATE TABLE SQL_NOOBS.viaje (
+	id int NOT NULL IDENTITY(1, 1) PRIMARY KEY,
+	camion_id nvarchar(255) FOREIGN KEY
+	REFERENCES [SQL_NOOBS].camion(patente)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+	chofer_id decimal(18,0) FOREIGN KEY
+	REFERENCES [SQL_NOOBS].chofer(dni)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+	recorrido_id int FOREIGN KEY
+	REFERENCES [SQL_NOOBS].recorrido(id)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+	fecha_inicio datetime2(7) NULL,
+	fecha_fin datetime2(3) NULL,
+	consumo_combustible decimal(18,2) NULL
+
+)
+GO
+
+CREATE TABLE SQL_NOOBS.paquete (
+	id int NOT NULL IDENTITY(1, 1) PRIMARY KEY,
+	tipo_paquete_id int FOREIGN KEY
+	REFERENCES [SQL_NOOBS].tipo_paquete(id)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+	viaje_id int FOREIGN KEY
+	REFERENCES [SQL_NOOBS].viaje(id)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+	precio decimal(18,2) NULL,
+	cantidad int NULL
 
 )
 GO
