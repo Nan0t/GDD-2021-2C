@@ -265,11 +265,11 @@ CREATE TABLE SQL_NOOBS.paquete (
 )
 GO
 
-IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[alta_material]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
-DROP PROCEDURE [SQL_NOOBS].alta_material
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_material]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE [SQL_NOOBS].insert_material
 GO
 
-CREATE PROCEDURE SQL_NOOBS.alta_material
+CREATE PROCEDURE SQL_NOOBS.insert_material
 AS
 BEGIN 
 	INSERT INTO SQL_NOOBS.material (cod, descripcion, precio)
@@ -281,4 +281,30 @@ BEGIN
 END
 GO
 
-EXEC [SQL_NOOBS].alta_material
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_chofer]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_chofer
+GO
+
+CREATE PROCEDURE SQL_NOOBS.insert_chofer
+AS
+BEGIN 
+	INSERT INTO SQL_NOOBS.chofer (dni, nombre, apellido, direccion, telefono, mail, fecha_nacimiento, legajo, costo_hora)
+		SELECT 
+			DISTINCT CHOFER_DNI,
+			CHOFER_NOMBRE, 
+			CHOFER_APELLIDO,
+			CHOFER_DIRECCION,
+			CHOFER_TELEFONO,
+			CHOFER_MAIL,
+			CHOFER_FECHA_NAC,
+			CHOFER_NRO_LEGAJO,
+			CHOFER_COSTO_HORA
+		FROM 
+			gd_esquema.Maestra
+		WHERE 
+			CHOFER_DNI IS NOT NULL
+END
+GO
+
+EXEC [SQL_NOOBS].insert_material
+EXEC [SQL_NOOBS].insert_chofer
