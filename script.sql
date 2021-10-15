@@ -115,7 +115,6 @@ CREATE TABLE SQL_NOOBS.recorrido (
 	destino nvarchar(255) NULL,
 	precio nvarchar(255) NULL,
 	kilometros int NULL,
-	combustible decimal(18,2) NULL
 )
 GO
 
@@ -328,6 +327,27 @@ BEGIN
 END
 GO
 
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_recorrido]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_recorrido
+GO
+
+CREATE PROCEDURE SQL_NOOBS.insert_recorrido
+AS
+BEGIN 
+	INSERT INTO SQL_NOOBS.recorrido (origen, destino, precio, kilometros)
+		SELECT 
+			DISTINCT RECORRIDO_CIUDAD_ORIGEN,
+			RECORRIDO_CIUDAD_DESTINO,
+			RECORRIDO_PRECIO,
+			RECORRIDO_KM
+		FROM 
+			gd_esquema.Maestra
+		WHERE 
+			RECORRIDO_CIUDAD_ORIGEN IS NOT NULL
+END
+GO
+
 EXEC [SQL_NOOBS].insert_material
 EXEC [SQL_NOOBS].insert_chofer
 EXEC [SQL_NOOBS].insert_tipo_paquete
+EXEC [SQL_NOOBS].insert_recorrido
