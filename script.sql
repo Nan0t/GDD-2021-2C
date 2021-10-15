@@ -306,5 +306,28 @@ BEGIN
 END
 GO
 
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_tipo_paquete]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_tipo_paquete
+GO
+
+CREATE PROCEDURE SQL_NOOBS.insert_tipo_paquete
+AS
+BEGIN 
+	INSERT INTO SQL_NOOBS.tipo_paquete (alto_max, ancho_max, largo_max, peso_max, descripcion_paquete, precio)
+		SELECT 
+			DISTINCT PAQUETE_ALTO_MAX,
+			PAQUETE_ANCHO_MAX,
+			PAQUETE_LARGO_MAX,
+			PAQUETE_PESO_MAX,
+			PAQUETE_DESCRIPCION,
+			PAQUETE_PRECIO
+		FROM 
+			gd_esquema.Maestra
+		WHERE 
+			PAQUETE_ALTO_MAX IS NOT NULL
+END
+GO
+
 EXEC [SQL_NOOBS].insert_material
 EXEC [SQL_NOOBS].insert_chofer
+EXEC [SQL_NOOBS].insert_tipo_paquete
