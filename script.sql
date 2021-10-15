@@ -27,7 +27,7 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].t
 
 	
 CREATE TABLE SQL_NOOBS.tipo_tarea (
-	id int NOT NULL IDENTITY PRIMARY KEY,  --IDENTITY se usa para autoincrementar el valor de id al agregar nuevas filas
+	id int NOT NULL IDENTITY(1, 1) PRIMARY KEY,  --IDENTITY se usa para autoincrementar el valor de id al agregar nuevas filas
 	tipo_tarea_descripcion nvarchar(255) NULL
 )
 
@@ -37,7 +37,7 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].t
 
 	
 CREATE TABLE SQL_NOOBS.taller (
-	id int NOT NULL IDENTITY PRIMARY KEY,  
+	id int NOT NULL IDENTITY(1, 1) PRIMARY KEY,  
 	nombre nvarchar(255) NULL,
 	mail nvarchar(255) NULL,
 	telefono decimal(18,0) NULL,
@@ -51,7 +51,7 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].m
 
 	
 CREATE TABLE SQL_NOOBS.modelo (
-	id int NOT NULL IDENTITY PRIMARY KEY,  
+	id int NOT NULL IDENTITY(1, 1) PRIMARY KEY,  
 	velocidad_maxima int NULL,
 	capacidad_tanque int NULL,
 	capacidad_carga int NULL,
@@ -65,7 +65,7 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].r
 
 	
 CREATE TABLE SQL_NOOBS.recorrido (
-	id int NOT NULL IDENTITY PRIMARY KEY,  
+	id int NOT NULL IDENTITY(1, 1) PRIMARY KEY,  
 	origen nvarchar(255) NULL,
 	destino nvarchar(255) NULL,
 	precio nvarchar(255) NULL,
@@ -95,7 +95,7 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].t
 	GO
 
 CREATE TABLE SQL_NOOBS.tipo_paquete (
-	id int NOT NULL IDENTITY PRIMARY KEY,  
+	id int NOT NULL IDENTITY(1, 1) PRIMARY KEY,  
 	alto_max decimal(18,2) NULL,
 	ancho_max decimal(18,2) NULL,
 	largo_max decimal(18,2) NULL,
