@@ -9,6 +9,10 @@ GO
 
 
 --ME FIJO SI EXISTE LA TABLA, EN CASO DE NO EXISTIR HAGO UN DROP Y LUEGO LA CREO (POR SI METEMOS CAMBIOS)
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].tareaXmaterial') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].tareaXmaterial
+	GO
+
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].mecanico') AND type = 'U')
 	DROP TABLE [SQL_NOOBS].mecanico
 	GO
@@ -55,13 +59,14 @@ CREATE TABLE SQL_NOOBS.material (
 	descripcion nvarchar(255) NULL,
 	precio decimal(18,2) NULL
 )
+GO
 
 	
 CREATE TABLE SQL_NOOBS.tipo_tarea (
 	id int NOT NULL IDENTITY(1, 1) PRIMARY KEY,  --IDENTITY se usa para autoincrementar el valor de id al agregar nuevas filas
 	tipo_tarea_descripcion nvarchar(255) NULL
 )
-
+GO
 	
 CREATE TABLE SQL_NOOBS.taller (
 	id int NOT NULL IDENTITY(1, 1) PRIMARY KEY,  
@@ -71,7 +76,7 @@ CREATE TABLE SQL_NOOBS.taller (
 	direccion nvarchar(255) NULL,
 	ciudad nvarchar(255) NULL
 )
-
+GO
 
 	
 CREATE TABLE SQL_NOOBS.modelo (
@@ -82,7 +87,7 @@ CREATE TABLE SQL_NOOBS.modelo (
 	modelo nvarchar(255) NULL,
 	marca_camion nvarchar(255) NULL
 )
-
+GO
 	
 CREATE TABLE SQL_NOOBS.recorrido (
 	id int NOT NULL IDENTITY(1, 1) PRIMARY KEY,  
@@ -92,7 +97,7 @@ CREATE TABLE SQL_NOOBS.recorrido (
 	kilometros int NULL,
 	combustible decimal(18,2) NULL
 )
-
+GO
 
 CREATE TABLE SQL_NOOBS.chofer (
 	dni decimal(18,0) NOT NULL PRIMARY KEY,  
@@ -105,7 +110,7 @@ CREATE TABLE SQL_NOOBS.chofer (
 	legajo int NULL,
 	costo_hora int NULL
 )
-
+GO
 
 CREATE TABLE SQL_NOOBS.tipo_paquete (
 	id int NOT NULL IDENTITY(1, 1) PRIMARY KEY,  
@@ -116,7 +121,7 @@ CREATE TABLE SQL_NOOBS.tipo_paquete (
 	descripcion_paquete nvarchar(255) NULL,
 	precio decimal(18,2) NULL
 )
-
+GO
 
 CREATE TABLE SQL_NOOBS.tarea (
 	codigo int NOT NULL PRIMARY KEY,  
@@ -127,7 +132,7 @@ CREATE TABLE SQL_NOOBS.tarea (
 	ON DELETE CASCADE
 	ON UPDATE CASCADE
 )
-
+GO
 
 CREATE TABLE SQL_NOOBS.mecanico (
 	dni decimal(18,0) NOT NULL PRIMARY KEY,  
@@ -144,3 +149,17 @@ CREATE TABLE SQL_NOOBS.mecanico (
 	ON DELETE CASCADE
 	ON UPDATE CASCADE
 )
+GO
+
+CREATE TABLE SQL_NOOBS.tareaXmaterial (
+	tarea_id int FOREIGN KEY
+	REFERENCES [SQL_NOOBS].tarea(codigo)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+	material_id nvarchar(100) FOREIGN KEY
+	REFERENCES [SQL_NOOBS].material(cod)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+	cantidad_material int NULL
+)
+GO
