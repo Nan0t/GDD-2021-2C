@@ -103,3 +103,14 @@ CREATE TABLE SQL_NOOBS.tipo_paquete (
 	descripcion_paquete nvarchar(255) NULL,
 	precio decimal(18,2) NULL
 )
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].tarea') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].tarea
+	GO
+
+CREATE TABLE SQL_NOOBS.tarea (
+	codigo int NOT NULL PRIMARY KEY,  
+	tipo_tarea_id int FOREIGN KEY REFERENCES [SQL_NOOBS].tipo_tarea(id),
+	tiempo_estimado_dias int NULL,
+	descripcion_tarea nvarchar(255) NULL
+)
