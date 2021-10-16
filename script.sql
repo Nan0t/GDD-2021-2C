@@ -73,7 +73,11 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].t
 	DROP TABLE [SQL_NOOBS].tarea
 	GO
 
---DROP DE SP SI EXISTEN (POR SI SE HACEN CAMBIOS)
+--DROP DE SP SI EXISTEN (POR SI SE HACEN CAMBIOS) 
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_tareaXorden_trabajo]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_tareaXorden_trabajo
+GO
+
 IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_tareaXmaterial]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
 DROP PROCEDURE SQL_NOOBS.insert_tareaXmaterial
 GO
@@ -264,7 +268,7 @@ CREATE TABLE SQL_NOOBS.tareaXorden_trabajo (
 	REFERENCES [SQL_NOOBS].orden_trabajo(id)
 	ON DELETE CASCADE
 	ON UPDATE CASCADE,
-	macanico_dni decimal(18,0) FOREIGN KEY
+	mecanico_dni decimal(18,0) FOREIGN KEY
 	REFERENCES [SQL_NOOBS].mecanico(dni)
 	ON DELETE CASCADE
 	ON UPDATE CASCADE,
@@ -536,6 +540,35 @@ BEGIN
 END
 GO
 
+CREATE PROCEDURE SQL_NOOBS.insert_tareaXorden_trabajo
+AS
+BEGIN 
+	INSERT INTO SQL_NOOBS.tareaXorden_trabajo(tarea_id, orden_trabajo_id, fecha_inicio_real, tiempo_real_dias, fecha_fin_real, fecha_inicio_planificado, mecanico_dni)
+		SELECT 
+			DISTINCT tarea.codigo as tarea,
+			ordentrabajo.id as orden_trabajo,
+			TAREA_FECHA_INICIO,
+			DATEDIFF(day, TAREA_FECHA_INICIO, TAREA_FECHA_FIN) as dias_reales,
+			TAREA_FECHA_FIN,
+			TAREA_FECHA_INICIO_PLANIFICADO,
+			mecanico.dni as mecanico_dni
+		FROM 
+			gd_esquema.Maestra maestra
+			JOIN SQL_NOOBS.tarea tarea
+				ON maestra.TAREA_CODIGO = tarea.codigo
+			JOIN SQL_NOOBS.mecanico mecanico
+				ON maestra.MECANICO_DNI = mecanico.dni
+			JOIN SQL_NOOBS.orden_trabajo ordentrabajo
+				ON maestra.ORDEN_TRABAJO_FECHA = ordentrabajo.fecha
+					AND maestra.ORDEN_TRABAJO_ESTADO = ordentrabajo.estado
+					AND maestra.CAMION_PATENTE = ordentrabajo.camion_id
+		WHERE 
+			tarea.codigo IS NOT NULL 
+			AND ordentrabajo.id IS NOT NULL
+			AND mecanico.dni IS NOT NULL
+END
+GO
+
 --EJECUCION DE SP
 
 EXEC [SQL_NOOBS].insert_material
@@ -549,4 +582,5 @@ EXEC [SQL_NOOBS].insert_mecanico
 EXEC [SQL_NOOBS].insert_camion
 EXEC [SQL_NOOBS].insert_orden_trabajo
 EXEC [SQL_NOOBS].insert_tarea
-EXEC [SQL_NOOBS].insert_tareaXmaterial
+EXEC [SQL_NOOBS].insert_tareaXmaterial 
+EXEC [SQL_NOOBS].insert_tareaXorden_trabajo
