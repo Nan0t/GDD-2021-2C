@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2021-10-15T23:36:30.068Z" agent="5.0 (Windows)" etag="EzIOKx07rG4hBwCcuONI" version="15.5.2" type="github" pages="2">
+<mxfile host="app.diagrams.net" modified="2021-10-16T16:20:23.621Z" agent="5.0 (Windows)" etag="1BmnyoEwJiogITpMeqpk" version="15.5.2" type="github" pages="2">
   <diagram id="R2lEEEUBdFMjLlhIrx00" name="Entidades básicas">
     <mxGraphModel dx="1358" dy="792" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="15000" pageHeight="100000" math="0" shadow="0" extFonts="Permanent Marker^https://fonts.googleapis.com/css?family=Permanent+Marker">
       <root>
@@ -689,7 +689,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="0hvoJS7vx-pQ0IGvkFED" name="DER">
-    <mxGraphModel dx="1422" dy="752" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="15000" pageHeight="15000" background="#F7F7F7" math="0" shadow="0">
+    <mxGraphModel dx="1358" dy="792" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="15000" pageHeight="15000" background="#F7F7F7" math="0" shadow="0">
       <root>
         <mxCell id="yvaSaNRA45WXPlCbgg4N-0" />
         <mxCell id="yvaSaNRA45WXPlCbgg4N-1" parent="yvaSaNRA45WXPlCbgg4N-0" />
@@ -1938,6 +1938,9 @@
               <mxPoint x="1380" y="955" />
             </Array>
           </mxGeometry>
+        </mxCell>
+        <mxCell id="faNNTVM3lPyjO56H2irF-0" value="HAY QUE MIRAR LO DE TAREA MATERIAL, LAS CANTIDADES&lt;br&gt; DEBERÍAN EXTRAERSE DE UN STRING PERO HAY INCONSISTENCIA.&lt;br&gt;EN CASO DE SACAR EL NUMERO, TAMBIÉN HAY QUE CAMBIAR EL PRECIO DEL MATERIAL." style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="yvaSaNRA45WXPlCbgg4N-1">
+          <mxGeometry x="230" y="1065" width="530" height="50" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
