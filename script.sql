@@ -74,6 +74,14 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].t
 	GO
 
 --DROP DE SP SI EXISTEN (POR SI SE HACEN CAMBIOS)
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_tareaXmaterial]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_tareaXmaterial
+GO
+
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_tarea]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_tarea
+GO
+
 IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_orden_trabajo]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
 DROP PROCEDURE SQL_NOOBS.insert_orden_trabajo
 GO
@@ -496,6 +504,38 @@ BEGIN
 END
 GO
 
+CREATE PROCEDURE SQL_NOOBS.insert_tarea
+AS
+BEGIN 
+	INSERT INTO SQL_NOOBS.tarea(codigo, tipo_tarea_id, tiempo_estimado_dias, descripcion_tarea)
+		SELECT 
+			DISTINCT TAREA_CODIGO, 
+			tipo_tarea.id,
+			TAREA_TIEMPO_ESTIMADO,
+			TAREA_DESCRIPCION
+		FROM gd_esquema.Maestra maestra
+			JOIN [SQL_NOOBS].tipo_tarea tipo_tarea
+				ON maestra.TIPO_TAREA = tipo_tarea.tipo_tarea_descripcion
+		WHERE 
+			maestra.TAREA_CODIGO IS NOT NULL
+END
+GO
+
+CREATE PROCEDURE SQL_NOOBS.insert_tareaXmaterial
+AS
+BEGIN 
+	INSERT INTO SQL_NOOBS.tareaXmaterial(tarea_id, material_id)
+		SELECT 
+			DISTINCT tarea.codigo,
+			material.cod
+		FROM gd_esquema.Maestra maestra
+			JOIN [SQL_NOOBS].tarea tarea
+				ON maestra.TAREA_CODIGO = tarea.codigo
+			JOIN [SQL_NOOBS].material material
+				ON maestra.MATERIAL_COD = material.cod
+END
+GO
+
 --EJECUCION DE SP
 
 EXEC [SQL_NOOBS].insert_material
@@ -508,3 +548,5 @@ EXEC [SQL_NOOBS].insert_taller
 EXEC [SQL_NOOBS].insert_mecanico
 EXEC [SQL_NOOBS].insert_camion
 EXEC [SQL_NOOBS].insert_orden_trabajo
+EXEC [SQL_NOOBS].insert_tarea
+EXEC [SQL_NOOBS].insert_tareaXmaterial
