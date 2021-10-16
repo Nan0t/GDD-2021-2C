@@ -540,6 +540,10 @@ BEGIN
 END
 GO
 
+
+/*En la SP para rellenar la tabla tareaXorden_trabajo hay un triple join, para obtener los id de las FK, la más problematica es orden_trabajo dado que la idea 
+es diferenciar bien las filas por lo que para hacer el join también termino usando el FK de esta tabla hacia camion.
+Por ser la FK de camion una clave natural no uso un 4to join (maestra.camion_patente = orden_trabajo.camion_id) [AMBAS REFERENCIAN A LA PATENTE].*/
 CREATE PROCEDURE SQL_NOOBS.insert_tareaXorden_trabajo
 AS
 BEGIN 
