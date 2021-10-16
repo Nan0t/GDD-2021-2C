@@ -74,6 +74,14 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].t
 	GO
 
 --DROP DE SP SI EXISTEN (POR SI SE HACEN CAMBIOS) 
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_paquete]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_paquete
+GO
+
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_viaje]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_viaje
+GO
+
 IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_tareaXorden_trabajo]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
 DROP PROCEDURE SQL_NOOBS.insert_tareaXorden_trabajo
 GO
@@ -573,6 +581,72 @@ BEGIN
 END
 GO
 
+CREATE PROCEDURE SQL_NOOBS.insert_viaje
+AS
+BEGIN 
+	INSERT INTO SQL_NOOBS.viaje(camion_id, chofer_id, recorrido_id, fecha_inicio, fecha_fin, consumo_combustible)
+		SELECT 
+			DISTINCT camion.patente,
+			chofer.dni,
+			recorrido.id,
+			VIAJE_FECHA_INICIO,
+			VIAJE_FECHA_FIN,
+			VIAJE_CONSUMO_COMBUSTIBLE
+		FROM 
+			gd_esquema.Maestra maestra
+			JOIN SQL_NOOBS.camion camion
+				ON maestra.CAMION_PATENTE = camion.patente 
+			JOIN SQL_NOOBS.chofer chofer
+				ON maestra.CHOFER_DNI = chofer.dni 
+			JOIN SQL_NOOBS.recorrido recorrido
+				ON maestra.RECORRIDO_CIUDAD_ORIGEN = recorrido.origen
+					AND maestra.RECORRIDO_CIUDAD_DESTINO = recorrido.destino
+					AND maestra.RECORRIDO_KM = recorrido.kilometros
+					AND maestra.RECORRIDO_PRECIO = recorrido.precio 
+		WHERE 
+			camion.patente IS NOT NULL 
+			AND chofer.dni IS NOT NULL
+			AND recorrido.id IS NOT NULL
+
+END
+GO
+
+CREATE PROCEDURE SQL_NOOBS.insert_paquete
+AS
+BEGIN 
+	INSERT INTO SQL_NOOBS.paquete(tipo_paquete_id, viaje_id, cantidad)
+		SELECT
+			DISTINCT
+			tipo_paq.id as tipo_paquete_id,
+			viaje.id as viaje_id,
+			SUM(maestra.PAQUETE_CANTIDAD) as cant_paquetes
+		FROM 
+			gd_esquema.Maestra maestra
+			JOIN SQL_NOOBS.tipo_paquete tipo_paq
+				ON maestra.PAQUETE_DESCRIPCION = tipo_paq.descripcion_paquete
+			JOIN SQL_NOOBS.viaje viaje 
+				ON maestra.VIAJE_FECHA_INICIO= viaje.fecha_inicio
+					AND maestra.VIAJE_FECHA_FIN = viaje.fecha_fin
+					AND maestra.VIAJE_CONSUMO_COMBUSTIBLE = viaje.consumo_combustible
+					AND maestra.CAMION_PATENTE = viaje.camion_id
+					AND maestra.CHOFER_DNI = viaje.chofer_id
+			JOIN SQL_NOOBS.recorrido recorrido
+				ON maestra.RECORRIDO_CIUDAD_ORIGEN = recorrido.origen
+					AND maestra.RECORRIDO_CIUDAD_DESTINO = recorrido.destino
+					AND maestra.RECORRIDO_KM = recorrido.kilometros
+					AND maestra.RECORRIDO_PRECIO = recorrido.precio 
+		GROUP BY
+			tipo_paq.id,
+			viaje.id,
+			maestra.CHOFER_DNI,
+			maestra.VIAJE_FECHA_INICIO,
+			maestra.CAMION_PATENTE,
+			maestra.PAQUETE_DESCRIPCION
+		ORDER BY 
+			viaje.id ASC
+END
+GO
+
 --EJECUCION DE SP
 
 EXEC [SQL_NOOBS].insert_material
@@ -588,3 +662,5 @@ EXEC [SQL_NOOBS].insert_orden_trabajo
 EXEC [SQL_NOOBS].insert_tarea
 EXEC [SQL_NOOBS].insert_tareaXmaterial 
 EXEC [SQL_NOOBS].insert_tareaXorden_trabajo
+EXEC [SQL_NOOBS].insert_viaje 
+EXEC [SQL_NOOBS].insert_paquete
