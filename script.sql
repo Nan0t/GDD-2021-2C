@@ -74,6 +74,18 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].t
 	GO
 
 --DROP DE SP SI EXISTEN (POR SI SE HACEN CAMBIOS)
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_orden_trabajo]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_orden_trabajo
+GO
+
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_camion]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_camion
+GO
+
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_mecanico]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_mecanico
+GO
+
 IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_taller]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
 DROP PROCEDURE SQL_NOOBS.insert_taller
 GO
@@ -415,6 +427,77 @@ BEGIN
 END
 GO
 
+CREATE PROCEDURE SQL_NOOBS.insert_mecanico
+AS
+BEGIN 
+	INSERT INTO SQL_NOOBS.mecanico (dni, nombre, apellido, direccion, telefono, mail, fecha_nacimiento, legajo, costo_hora, taller_id)
+		SELECT 
+			DISTINCT MECANICO_DNI,
+			MECANICO_NOMBRE, 
+			MECANICO_APELLIDO,
+			MECANICO_DIRECCION,
+			MECANICO_TELEFONO,
+			MECANICO_MAIL,
+			MECANICO_FECHA_NAC,
+			MECANICO_NRO_LEGAJO,
+			MECANICO_COSTO_HORA,
+			taller.id
+		FROM 
+			gd_esquema.Maestra maestra
+			JOIN SQL_NOOBS.taller taller
+				ON maestra.TALLER_NOMBRE = taller.nombre 
+					AND maestra.TALLER_MAIL = taller.mail
+					AND maestra.TALLER_TELEFONO = taller.telefono
+					AND maestra.TALLER_DIRECCION = taller.direccion
+					AND maestra.TALLER_CIUDAD = taller.ciudad
+		WHERE 
+			MECANICO_DNI IS NOT NULL
+END
+GO
+
+CREATE PROCEDURE SQL_NOOBS.insert_camion
+AS
+BEGIN 
+	INSERT INTO SQL_NOOBS.camion(patente, modelo_id, numero_chasis, numero_motor, fecha_alta)
+		SELECT 
+			DISTINCT CAMION_PATENTE,
+			modelo.id,
+			CAMION_NRO_CHASIS,
+			CAMION_NRO_MOTOR,
+			CAMION_FECHA_ALTA
+		FROM 
+			gd_esquema.Maestra maestra
+			JOIN SQL_NOOBS.modelo modelo
+				ON maestra.MODELO_VELOCIDAD_MAX = modelo.velocidad_maxima
+					AND maestra.MODELO_CAPACIDAD_TANQUE = modelo.capacidad_tanque
+					AND maestra.MODELO_CAPACIDAD_CARGA = modelo.capacidad_carga
+					AND maestra.MODELO_CAMION = modelo.modelo
+					AND maestra.MARCA_CAMION_MARCA = modelo.marca_camion
+		WHERE 
+			CAMION_PATENTE IS NOT NULL
+END
+GO
+
+CREATE PROCEDURE SQL_NOOBS.insert_orden_trabajo
+AS
+BEGIN 
+	INSERT INTO SQL_NOOBS.orden_trabajo(camion_id, fecha, estado)
+		SELECT 
+			DISTINCT camion.patente,
+			ORDEN_TRABAJO_FECHA,
+			ORDEN_TRABAJO_ESTADO
+		FROM 
+			gd_esquema.Maestra maestra
+			JOIN SQL_NOOBS.camion camion
+				ON maestra.CAMION_PATENTE = camion.patente
+		WHERE 
+			ORDEN_TRABAJO_FECHA IS NOT NULL
+			AND ORDEN_TRABAJO_ESTADO IS NOT NULL
+END
+GO
+
+--EJECUCION DE SP
+
 EXEC [SQL_NOOBS].insert_material
 EXEC [SQL_NOOBS].insert_chofer
 EXEC [SQL_NOOBS].insert_tipo_paquete
@@ -422,3 +505,6 @@ EXEC [SQL_NOOBS].insert_recorrido
 EXEC [SQL_NOOBS].insert_tipo_tarea
 EXEC [SQL_NOOBS].insert_modelo
 EXEC [SQL_NOOBS].insert_taller
+EXEC [SQL_NOOBS].insert_mecanico
+EXEC [SQL_NOOBS].insert_camion
+EXEC [SQL_NOOBS].insert_orden_trabajo
