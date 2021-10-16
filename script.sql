@@ -347,7 +347,69 @@ BEGIN
 END
 GO
 
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_tipo_tarea]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_tipo_tarea
+GO
+
+CREATE PROCEDURE SQL_NOOBS.insert_tipo_tarea
+AS
+BEGIN 
+	INSERT INTO SQL_NOOBS.tipo_tarea (tipo_tarea)
+		SELECT 
+			DISTINCT TIPO_TAREA
+		FROM 
+			gd_esquema.Maestra
+		WHERE 
+			TIPO_TAREA IS NOT NULL
+END
+GO
+
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_modelo]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_modelo
+GO
+
+CREATE PROCEDURE SQL_NOOBS.insert_modelo
+AS
+BEGIN 
+	INSERT INTO SQL_NOOBS.modelo (velocidad_maxima,capacidad_tanque,capacidad_carga,modelo,marca_camion)
+		SELECT 
+			DISTINCT MODELO_VELOCIDAD_MAX,
+			MODELO_CAPACIDAD_TANQUE,
+			MODELO_CAPACIDAD_CARGA,
+			MODELO_CAMION,
+			MARCA_CAMION_MARCA
+		FROM 
+			gd_esquema.Maestra
+		WHERE 
+			MODELO_CAMION IS NOT NULL
+END
+GO
+
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_taller]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_taller
+GO
+
+CREATE PROCEDURE SQL_NOOBS.insert_taller
+AS
+BEGIN 
+	INSERT INTO SQL_NOOBS.taller (nombre, mail, telefono, direccion, ciudad)
+		SELECT 
+			DISTINCT TALLER_NOMBRE, 
+			TALLER_MAIL,
+			TALLER_TELEFONO, 
+			TALLER_DIRECCION, 
+			TALLER_CIUDAD
+		FROM 
+			gd_esquema.Maestra
+		WHERE 
+			TALLER_NOMBRE IS NOT NULL
+END
+GO
+
 EXEC [SQL_NOOBS].insert_material
 EXEC [SQL_NOOBS].insert_chofer
 EXEC [SQL_NOOBS].insert_tipo_paquete
 EXEC [SQL_NOOBS].insert_recorrido
+EXEC [SQL_NOOBS].insert_tipo_tarea
+EXEC [SQL_NOOBS].insert_modelo
+EXEC [SQL_NOOBS].insert_taller
