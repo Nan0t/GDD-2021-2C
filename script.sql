@@ -8,7 +8,7 @@ END
 GO
 
 
---ME FIJO SI EXISTE LA TABLA, EN CASO DE NO EXISTIR HAGO UN DROP Y LUEGO LA CREO (POR SI METEMOS CAMBIOS)
+--DROP DE TABLAS SI EXISTEN
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].paquete') AND type = 'U')
 	DROP TABLE [SQL_NOOBS].paquete
 	GO
@@ -73,7 +73,36 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].t
 	DROP TABLE [SQL_NOOBS].tarea
 	GO
 
+--DROP DE SP SI EXISTEN (POR SI SE HACEN CAMBIOS)
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_taller]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_taller
+GO
 
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_modelo]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_modelo
+GO
+
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_tipo_tarea]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_tipo_tarea
+GO
+
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_recorrido]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_recorrido
+GO
+
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_tipo_paquete]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_tipo_paquete
+GO
+
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_chofer]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_chofer
+GO
+
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_material]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE [SQL_NOOBS].insert_material
+GO
+
+-- CREACION DE TABLAS
 CREATE TABLE SQL_NOOBS.material (
 	cod nvarchar(100) NOT NULL PRIMARY KEY,
 	descripcion nvarchar(255) NULL,
@@ -264,9 +293,7 @@ CREATE TABLE SQL_NOOBS.paquete (
 )
 GO
 
-IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_material]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
-DROP PROCEDURE [SQL_NOOBS].insert_material
-GO
+-- CREACION DE SP
 
 CREATE PROCEDURE SQL_NOOBS.insert_material
 AS
@@ -280,9 +307,6 @@ BEGIN
 END
 GO
 
-IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_chofer]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
-DROP PROCEDURE SQL_NOOBS.insert_chofer
-GO
 
 CREATE PROCEDURE SQL_NOOBS.insert_chofer
 AS
@@ -305,9 +329,6 @@ BEGIN
 END
 GO
 
-IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_tipo_paquete]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
-DROP PROCEDURE SQL_NOOBS.insert_tipo_paquete
-GO
 
 CREATE PROCEDURE SQL_NOOBS.insert_tipo_paquete
 AS
@@ -327,9 +348,6 @@ BEGIN
 END
 GO
 
-IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_recorrido]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
-DROP PROCEDURE SQL_NOOBS.insert_recorrido
-GO
 
 CREATE PROCEDURE SQL_NOOBS.insert_recorrido
 AS
@@ -347,14 +365,11 @@ BEGIN
 END
 GO
 
-IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_tipo_tarea]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
-DROP PROCEDURE SQL_NOOBS.insert_tipo_tarea
-GO
 
 CREATE PROCEDURE SQL_NOOBS.insert_tipo_tarea
 AS
 BEGIN 
-	INSERT INTO SQL_NOOBS.tipo_tarea (tipo_tarea)
+	INSERT INTO SQL_NOOBS.tipo_tarea (tipo_tarea_descripcion)
 		SELECT 
 			DISTINCT TIPO_TAREA
 		FROM 
@@ -364,9 +379,6 @@ BEGIN
 END
 GO
 
-IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_modelo]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
-DROP PROCEDURE SQL_NOOBS.insert_modelo
-GO
 
 CREATE PROCEDURE SQL_NOOBS.insert_modelo
 AS
@@ -385,9 +397,6 @@ BEGIN
 END
 GO
 
-IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_taller]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
-DROP PROCEDURE SQL_NOOBS.insert_taller
-GO
 
 CREATE PROCEDURE SQL_NOOBS.insert_taller
 AS
