@@ -614,12 +614,13 @@ GO
 CREATE PROCEDURE SQL_NOOBS.insert_paquete
 AS
 BEGIN 
-	INSERT INTO SQL_NOOBS.paquete(tipo_paquete_id, viaje_id, cantidad)
+	INSERT INTO SQL_NOOBS.paquete(tipo_paquete_id, viaje_id, cantidad, precio)
 		SELECT
 			DISTINCT
 			tipo_paq.id as tipo_paquete_id,
 			viaje.id as viaje_id,
-			SUM(maestra.PAQUETE_CANTIDAD) as cant_paquetes
+			SUM(maestra.PAQUETE_CANTIDAD) as cant_paquetes,
+			(recorrido.precio + tipo_paq.precio) AS precio_paquete
 		FROM 
 			gd_esquema.Maestra maestra
 			JOIN SQL_NOOBS.tipo_paquete tipo_paq
@@ -641,11 +642,15 @@ BEGIN
 			maestra.CHOFER_DNI,
 			maestra.VIAJE_FECHA_INICIO,
 			maestra.CAMION_PATENTE,
-			maestra.PAQUETE_DESCRIPCION
+			maestra.PAQUETE_DESCRIPCION,
+			(recorrido.precio + tipo_paq.precio),
+			tipo_paq.precio,
+			recorrido.precio
 		ORDER BY 
 			viaje.id ASC
 END
 GO
+
 
 --EJECUCION DE SP
 
