@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2021-10-16T16:20:23.621Z" agent="5.0 (Windows)" etag="1BmnyoEwJiogITpMeqpk" version="15.5.2" type="github" pages="2">
+<mxfile host="app.diagrams.net" modified="2021-10-20T21:57:31.830Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36" etag="NKw1mdW1wVeDYG9l9I8N" version="15.5.4" type="github" pages="2">
   <diagram id="R2lEEEUBdFMjLlhIrx00" name="Entidades básicas">
-    <mxGraphModel dx="1358" dy="792" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="15000" pageHeight="100000" math="0" shadow="0" extFonts="Permanent Marker^https://fonts.googleapis.com/css?family=Permanent+Marker">
+    <mxGraphModel dx="1278" dy="579" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="15000" pageHeight="100000" math="0" shadow="0" extFonts="Permanent Marker^https://fonts.googleapis.com/css?family=Permanent+Marker">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -689,7 +689,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="0hvoJS7vx-pQ0IGvkFED" name="DER">
-    <mxGraphModel dx="1358" dy="792" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="15000" pageHeight="15000" background="#F7F7F7" math="0" shadow="0">
+    <mxGraphModel dx="1278" dy="579" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="15000" pageHeight="15000" background="#F7F7F7" math="0" shadow="0">
       <root>
         <mxCell id="yvaSaNRA45WXPlCbgg4N-0" />
         <mxCell id="yvaSaNRA45WXPlCbgg4N-1" parent="yvaSaNRA45WXPlCbgg4N-0" />
@@ -1837,7 +1837,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="1bhRr3YCkSP4UQcM_PpC-12" value="tareaXorden_trabajo " style="shape=table;startSize=30;container=1;collapsible=1;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;" parent="yvaSaNRA45WXPlCbgg4N-1" vertex="1">
-          <mxGeometry x="1500" y="980" width="250" height="240.00000000000023" as="geometry" />
+          <mxGeometry x="1500" y="970" width="250" height="240.00000000000023" as="geometry" />
         </mxCell>
         <mxCell id="1bhRr3YCkSP4UQcM_PpC-13" value="" style="shape=partialRectangle;collapsible=0;dropTarget=0;pointerEvents=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;" parent="1bhRr3YCkSP4UQcM_PpC-12" vertex="1">
           <mxGeometry y="30" width="250" height="30" as="geometry" />
@@ -1939,7 +1939,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="faNNTVM3lPyjO56H2irF-0" value="HAY QUE MIRAR LO DE TAREA MATERIAL, LAS CANTIDADES&lt;br&gt; DEBERÍAN EXTRAERSE DE UN STRING PERO HAY INCONSISTENCIA.&lt;br&gt;EN CASO DE SACAR EL NUMERO, TAMBIÉN HAY QUE CAMBIAR EL PRECIO DEL MATERIAL." style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="yvaSaNRA45WXPlCbgg4N-1">
+        <mxCell id="faNNTVM3lPyjO56H2irF-0" value="HAY QUE MIRAR LO DE TAREA MATERIAL, LAS CANTIDADES&lt;br&gt; DEBERÍAN EXTRAERSE DE UN STRING PERO HAY INCONSISTENCIA.&lt;br&gt;EN CASO DE SACAR EL NUMERO, TAMBIÉN HAY QUE CAMBIAR EL PRECIO DEL MATERIAL." style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="yvaSaNRA45WXPlCbgg4N-1" vertex="1">
           <mxGeometry x="230" y="1065" width="530" height="50" as="geometry" />
         </mxCell>
       </root>
