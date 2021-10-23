@@ -325,6 +325,29 @@ CREATE TABLE SQL_NOOBS.paquete (
 )
 GO
 
+-- CREACION DE FUNCIONES
+/*
+Función creada para obtener la cantidad de materiales que utiliza una tarea, en el SP que se usa para rellenar la tabla materialesXtarea hago un update
+para poder agregar la cantidad. 
+Se encontraron mucha cantidad de inconsistencias en la tabla maestra. Ej: dos talleres llevan a cabo la misma tarea, el mismo dia, en el mismo camión.
+Otro ej: dos mecánicos hacen la tarea (tiene sentido), aunque en el enunciado hablan de que el usuario elige el mecánico (singular) para la tarea.
+Los agrupamientos por taller_mail y mecanico_dni son por estas inconsistencias. En cambio el agrupamiento por Orden de trabajo (campos de patente de camion y orden de trabajo)
+son para obtener la cantidad de elementos, luego obtengo un solo valor (top 1) el cual se repite para las distintas ordenes de trabajo en la misma tarea.
+*/
+CREATE FUNCTION SQL_NOOBS.obtener_cantidad_materiales ( @material_cod nvarchar(100), @tarea_cod int)
+RETURNS int AS
+BEGIN
+    RETURN
+   (SELECT TOP 1 COUNT(MATERIAL_DESCRIPCION)
+    FROM
+        gd_esquema.Maestra
+    WHERE 
+        MATERIAL_COD = @material_cod
+        AND TAREA_CODIGO = @tarea_cod
+    GROUP BY ORDEN_TRABAJO_FECHA , CAMION_PATENTE, TALLER_MAIL, MECANICO_DNI
+    ORDER BY COUNT(MATERIAL_DESCRIPCION) ASC)
+END
+GO
 -- CREACION DE SP
 
 CREATE PROCEDURE SQL_NOOBS.insert_material
@@ -545,6 +568,9 @@ BEGIN
 				ON maestra.TAREA_CODIGO = tarea.codigo
 			JOIN [SQL_NOOBS].material material
 				ON maestra.MATERIAL_COD = material.cod
+
+	UPDATE SQL_NOOBS.tareaXmaterial
+	SET cantidad_material = (SELECT SQL_NOOBS.obtener_cantidad_materiales(SQL_NOOBS.tareaXmaterial.material_id, SQL_NOOBS.tareaXmaterial.tarea_id))
 END
 GO
 
