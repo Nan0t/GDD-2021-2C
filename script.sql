@@ -73,6 +73,12 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].t
 	DROP TABLE [SQL_NOOBS].tarea
 	GO
 
+--DROP FUNCTION, SI EXISTE
+
+IF object_id(N'SQL_NOOBS.obtener_cantidad_materiales', N'FN') IS NOT NULL
+    DROP FUNCTION SQL_NOOBS.obtener_cantidad_materiales
+GO
+
 --DROP DE SP SI EXISTEN (POR SI SE HACEN CAMBIOS) 
 IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_paquete]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
 DROP PROCEDURE SQL_NOOBS.insert_paquete
@@ -326,14 +332,7 @@ CREATE TABLE SQL_NOOBS.paquete (
 GO
 
 -- CREACION DE FUNCIONES
-/*
-Función creada para obtener la cantidad de materiales que utiliza una tarea, en el SP que se usa para rellenar la tabla materialesXtarea hago un update
-para poder agregar la cantidad. 
-Se encontraron mucha cantidad de inconsistencias en la tabla maestra. Ej: dos talleres llevan a cabo la misma tarea, el mismo dia, en el mismo camión.
-Otro ej: dos mecánicos hacen la tarea (tiene sentido), aunque en el enunciado hablan de que el usuario elige el mecánico (singular) para la tarea.
-Los agrupamientos por taller_mail y mecanico_dni son por estas inconsistencias. En cambio el agrupamiento por Orden de trabajo (campos de patente de camion y orden de trabajo)
-son para obtener la cantidad de elementos, luego obtengo un solo valor (top 1) el cual se repite para las distintas ordenes de trabajo en la misma tarea.
-*/
+
 CREATE FUNCTION SQL_NOOBS.obtener_cantidad_materiales ( @material_cod nvarchar(100), @tarea_cod int)
 RETURNS int AS
 BEGIN
@@ -575,9 +574,7 @@ END
 GO
 
 
-/*En la SP para rellenar la tabla tareaXorden_trabajo hay un triple join, para obtener los id de las FK, la más problematica es orden_trabajo dado que la idea 
-es diferenciar bien las filas por lo que para hacer el join también termino usando el FK de esta tabla hacia camion.
-Por ser la FK de camion una clave natural no uso un 4to join (maestra.camion_patente = orden_trabajo.camion_id) [AMBAS REFERENCIAN A LA PATENTE].*/
+
 CREATE PROCEDURE SQL_NOOBS.insert_tareaXorden_trabajo
 AS
 BEGIN 
@@ -678,20 +675,18 @@ END
 GO
 
 
---EJECUCION DE SP
-
-EXEC [SQL_NOOBS].insert_material
-EXEC [SQL_NOOBS].insert_chofer
-EXEC [SQL_NOOBS].insert_tipo_paquete
-EXEC [SQL_NOOBS].insert_recorrido
-EXEC [SQL_NOOBS].insert_tipo_tarea
-EXEC [SQL_NOOBS].insert_modelo
-EXEC [SQL_NOOBS].insert_taller
-EXEC [SQL_NOOBS].insert_mecanico
-EXEC [SQL_NOOBS].insert_camion
-EXEC [SQL_NOOBS].insert_orden_trabajo
-EXEC [SQL_NOOBS].insert_tarea
-EXEC [SQL_NOOBS].insert_tareaXmaterial 
-EXEC [SQL_NOOBS].insert_tareaXorden_trabajo
-EXEC [SQL_NOOBS].insert_viaje 
-EXEC [SQL_NOOBS].insert_paquete
+	EXEC [SQL_NOOBS].insert_material
+	EXEC [SQL_NOOBS].insert_chofer
+	EXEC [SQL_NOOBS].insert_tipo_paquete
+	EXEC [SQL_NOOBS].insert_recorrido
+	EXEC [SQL_NOOBS].insert_tipo_tarea
+	EXEC [SQL_NOOBS].insert_modelo
+	EXEC [SQL_NOOBS].insert_taller
+	EXEC [SQL_NOOBS].insert_mecanico
+	EXEC [SQL_NOOBS].insert_camion
+	EXEC [SQL_NOOBS].insert_orden_trabajo
+	EXEC [SQL_NOOBS].insert_tarea
+	EXEC [SQL_NOOBS].insert_tareaXmaterial 
+	EXEC [SQL_NOOBS].insert_tareaXorden_trabajo
+	EXEC [SQL_NOOBS].insert_viaje 
+	EXEC [SQL_NOOBS].insert_paquete
