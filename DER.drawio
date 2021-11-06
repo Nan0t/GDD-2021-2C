@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2021-11-06T12:50:09.275Z" agent="5.0 (Windows)" etag="d65Xd9cCQ-SjwP_0iepG" version="15.6.8" type="github" pages="4">
+<mxfile host="app.diagrams.net" modified="2021-11-06T12:50:30.288Z" agent="5.0 (Windows)" etag="fYou94gH6VQDsL6WYpLR" version="15.6.8" type="github" pages="4">
   <diagram id="R2lEEEUBdFMjLlhIrx00" name="Entidades básicas">
     <mxGraphModel dx="1422" dy="752" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="15000" pageHeight="100000" math="0" shadow="0" extFonts="Permanent Marker^https://fonts.googleapis.com/css?family=Permanent+Marker">
       <root>
@@ -3189,7 +3189,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="IKd0WOz_jqeccw2qe-dH" name="DER- BI">
-    <mxGraphModel dx="1422" dy="752" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="10000" pageHeight="10000" math="0" shadow="0">
+    <mxGraphModel dx="3555" dy="1880" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="5000" pageHeight="5000" math="0" shadow="0">
       <root>
         <mxCell id="Ofkc89xWVs2ZMS6IX_Jj-0" />
         <mxCell id="Ofkc89xWVs2ZMS6IX_Jj-1" parent="Ofkc89xWVs2ZMS6IX_Jj-0" />
