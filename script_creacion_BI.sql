@@ -26,6 +26,34 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].B
 	DROP TABLE [SQL_NOOBS].BI_dimension_camion
 	GO
 
+--DROP DE SP SI EXISTEN (POR SI SE HACEN CAMBIOS) 
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_recorrido]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_recorrido
+GO
+
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_tipo_paquete]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_tipo_paquete
+GO
+
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_paquete]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_paquete
+GO
+
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_chofer]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_chofer
+GO
+
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_modelo]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_modelo
+GO
+
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_camion]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_camion
+GO
+
+
+--CREACION DE TABLAS
+
 CREATE TABLE SQL_NOOBS.BI_dimension_recorrido(
 	recorrido_id int PRIMARY KEY,
 	origen nvarchar(255) NULL,
@@ -81,4 +109,72 @@ CREATE TABLE SQL_NOOBS.BI_dimension_camion(
 	numero_motor nvarchar(255) NULL,
 	fecha_alta datetime2(3) NULL
 )
+GO
+
+-- CREACION DE SP
+
+CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_recorrido
+AS
+BEGIN 
+	INSERT INTO SQL_NOOBS.BI_dimension_recorrido (origen, destino, precio, kilometros)
+		SELECT 
+			DISTINCT (origen ,destino, precio, kilometros)
+		FROM 
+			SQL_NOOBS.recorrido
+END
+GO
+
+CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_tipo_paquete
+AS
+BEGIN 
+	INSERT INTO SQL_NOOBS.BI_dimension_tipo_paquete (alto_max, ancho_max, largo_max, peso_max, descripcion_paquete, precio)
+		SELECT 
+			DISTINCT (alto_max, ancho_max, largo_max, peso_max, descripcion_paquete, precio)
+		FROM 
+			SQL_NOOBS.tipo_paquete
+END
+GO
+
+CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_paquete
+AS
+BEGIN 
+	INSERT INTO SQL_NOOBS.BI_dimension_paquete (precio, cantidad)
+		SELECT 
+			DISTINCT (precio, cantidad)
+		FROM 
+			SQL_NOOBS.paquete
+END
+GO
+
+CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_chofer
+AS
+BEGIN 
+	INSERT INTO SQL_NOOBS.BI_dimension_chofer (nombre, apellido, direccion, telefono, mail, fecha_nacimiento, legajo, costo_hora)
+		SELECT 
+			DISTINCT (nombre, apellido, direccion, telefono, mail, fecha_nacimiento, legajo, costo_hora)
+		FROM 
+			SQL_NOOBS.chofer
+END
+GO
+
+CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_modelo
+AS
+BEGIN 
+	INSERT INTO SQL_NOOBS.BI_dimension_modelo (velocidad_maxima, capacidad_tanque, capacidad_carga, modelo, marca_camion)
+		SELECT 
+			DISTINCT (velocidad_maxima, capacidad_tanque, capacidad_carga, modelo, marca_camion)
+		FROM 
+			SQL_NOOBS.modelo
+END
+GO
+
+CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_camion
+AS
+BEGIN 
+	INSERT INTO SQL_NOOBS.BI_dimension_camion (numero_chasis, numero_motor, fecha_alta)
+		SELECT 
+			DISTINCT ((numero_chasis, numero_motor, fecha_alta)
+		FROM 
+			SQL_NOOBS.camion
+END
 GO
