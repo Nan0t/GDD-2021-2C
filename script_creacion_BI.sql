@@ -39,13 +39,34 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].B
 	DROP TABLE [SQL_NOOBS].BI_dimension_camion
 	GO
 
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_dimension_tiempo') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].BI_dimension_tiempo
+	GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_dimensiones_taller') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].BI_dimensiones_taller
+	GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_dimensiones_tipo_tarea') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].BI_dimensiones_tipo_tarea
+	GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_dimensiones_mecanico') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].BI_dimensiones_mecanico
+	GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_dimensiones_orden_trabajo') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].BI_dimensiones_orden_trabajo
+	GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_dimensiones_marca_camion') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].BI_dimensiones_marca_camion
+	GO
+
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_rango_edad') AND type = 'U')
 	DROP TABLE [SQL_NOOBS].BI_rango_edad
 	GO
 
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_dimension_tiempo') AND type = 'U')
-	DROP TABLE [SQL_NOOBS].BI_dimension_tiempo
-	GO
 
 IF object_id(N'SQL_NOOBS.fn_BI_buscar_pk_rango', N'FN') IS NOT NULL
     DROP FUNCTION SQL_NOOBS.fn_BI_buscar_pk_rango
@@ -96,6 +117,25 @@ IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[inse
 DROP PROCEDURE SQL_NOOBS.insert_BI_rango_edad
 GO
 
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_taller]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_taller
+GO
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_mecanico]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_mecanico
+GO
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_orden_trabajo]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_orden_trabajo
+GO
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_tipo_tarea]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_tipo_tarea
+GO
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_tipo_tarea]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_BI_tipo_tarea
+GO
+
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_marca_camion]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_marca_camion
+GO
 --CREACION DE TABLAS
 
 CREATE TABLE SQL_NOOBS.BI_dimension_recorrido(
@@ -200,26 +240,69 @@ CREATE TABLE SQL_NOOBS.BI_dimension_chofer(
 	ON UPDATE CASCADE
 )
 GO
+CREATE TABLE SQL_NOOBS.BI_dimensiones_taller (
+	taller_id int NOT NULL IDENTITY(1, 1) PRIMARY KEY,  
+	nombre nvarchar(255) NULL,
+	mail nvarchar(255) NULL,
+	telefono decimal(18,0) NULL,
+	direccion nvarchar(255) NULL,
+	ciudad nvarchar(255) NULL
+)
+GO
 
+CREATE TABLE SQL_NOOBS.BI_dimensiones_tipo_tarea (
+	id int NOT NULL IDENTITY(1, 1) PRIMARY KEY,
+	tipo_tarea_descripcion nvarchar(255) NULL
+)
+GO
 
-CREATE FUNCTION SQL_NOOBS.fn_BI_buscar_pk_rango  (@fecha_nacimiento as datetime2(3))
+CREATE TABLE SQL_NOOBS.BI_dimensiones_mecanico (
+	dni decimal(18,0) NOT NULL PRIMARY KEY,  
+	nombre nvarchar(255) NULL,
+	apellido nvarchar(255) NULL,
+	direccion nvarchar(255) NULL,
+	telefono int NULL,
+	mail nvarchar(255) NULL,
+	fecha_nacimiento datetime2(3) NULL,
+	legajo int NULL,
+	costo_hora int NULL,
+	rango_edad_id int FOREIGN KEY
+	REFERENCES [SQL_NOOBS].BI_rango_edad(id)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE
+)
+GO
+
+CREATE TABLE SQL_NOOBS.BI_dimensiones_orden_trabajo (
+	orden_trabajo_id INT NOT NULL PRIMARY KEY IDENTITY(1, 1),
+	fecha nvarchar(255) NULL,
+	estado nvarchar(255) NULL
+)
+GO
+
+CREATE TABLE SQL_NOOBS.BI_dimensiones_marca_camion (
+	id INT NOT NULL PRIMARY KEY IDENTITY(1, 1),
+	descripcion nvarchar(255) NULL
+)
+GO
+
+-- CREACION FUNCIONES 
+
+CREATE FUNCTION SQL_NOOBS.fn_BI_buscar_pk_rango  (@diferencia_edad AS int)
 RETURNS int
 AS
 BEGIN
 	RETURN 
-	(SELECT 
-		ra_ed.id
-	FROM SQL_NOOBS.BI_rango_edad ra_ed
-	WHERE ra_ed.rango = 
-			CASE
-				WHEN DATEDIFF(year, @fecha_nacimiento, GETDATE()) BETWEEN 18 AND 30 THEN '18 - 30 años'
-				WHEN DATEDIFF(year, @fecha_nacimiento, GETDATE()) BETWEEN 31 AND 50 THEN '31 – 50 años'
-				ELSE '> 50 años'
-
-			END
+	(SELECT
+	CASE
+		WHEN @diferencia_edad BETWEEN 18 AND 30 THEN (SELECT id FROM BI_rango_edad WHERE rango LIKE '18 - 30 años' )
+		WHEN @diferencia_edad BETWEEN 31 AND 50 THEN (SELECT id FROM BI_rango_edad WHERE rango LIKE '31 – 50 años' )
+		ELSE (SELECT id FROM BI_rango_edad WHERE rango LIKE '> 50 años' )
+	END
 	)
 END
 GO
+
 -- CREACION DE SP
 CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_material
 AS
@@ -336,7 +419,7 @@ BEGIN
 			fecha_nacimiento, 
 			legajo, 
 			costo_hora,
-			SQL_NOOBS.fn_BI_buscar_pk_rango(fecha_nacimiento)
+			SQL_NOOBS.fn_BI_buscar_pk_rango(DATEDIFF(year, fecha_nacimiento, GETDATE()))
 		FROM 
 			SQL_NOOBS.chofer
 END
@@ -363,14 +446,88 @@ BEGIN
 END
 GO
 
+CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_taller
+AS
+BEGIN
+	INSERT INTO SQL_NOOBS.BI_dimensiones_taller (nombre,mail, telefono, direccion,ciudad)
+		SELECT 
+				nombre,
+				mail, 
+				telefono, 
+				direccion,
+				ciudad
+		FROM 
+				SQL_NOOBS.taller
+END
+GO
+
+CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_mecanico
+AS
+BEGIN
+	INSERT INTO SQL_NOOBS.BI_dimensiones_mecanico (dni,nombre,apellido,direccion,telefono,mail,fecha_nacimiento,legajo,costo_hora, rango_edad_id)
+		SELECT 
+				dni, 
+				nombre, 
+				apellido, 
+				direccion, 
+				telefono, 
+				mail, 
+				fecha_nacimiento, 
+				legajo, 
+				costo_hora,
+				SQL_NOOBS.fn_BI_buscar_pk_rango(DATEDIFF(year, fecha_nacimiento, GETDATE()))
+		FROM 
+				SQL_NOOBS.mecanico
+END
+GO
+
+CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_orden_trabajo
+AS
+BEGIN
+	INSERT INTO SQL_NOOBS.BI_dimensiones_orden_trabajo(fecha,estado)
+		SELECT DISTINCT
+				fecha, 
+				estado
+		FROM 
+				SQL_NOOBS.orden_trabajo
+END
+GO
+
+CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_tipo_tarea
+AS
+BEGIN
+	INSERT INTO SQL_NOOBS.BI_dimensiones_tipo_tarea (tipo_tarea_descripcion)
+		SELECT 
+				tipo_tarea_descripcion
+		FROM 
+				SQL_NOOBS.tipo_tarea
+END
+GO
+
+CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_marca_camion
+AS
+BEGIN
+	INSERT INTO SQL_NOOBS.BI_dimensiones_marca_camion (descripcion)
+		SELECT 
+				DISTINCT marca_camion
+		FROM 
+				SQL_NOOBS.modelo
+END
+GO
+
+EXEC SQL_NOOBS.insert_BI_dimension_tiempo
+EXEC SQL_NOOBS.insert_BI_rango_edad
 EXEC SQL_NOOBS.insert_BI_dimension_chofer
 EXEC SQL_NOOBS.insert_BI_dimension_modelo
 EXEC SQL_NOOBS.insert_BI_dimension_camion
 EXEC SQL_NOOBS.insert_BI_dimension_tipo_paquete
 EXEC SQL_NOOBS.insert_BI_dimension_paquete
 EXEC SQL_NOOBS.insert_BI_dimension_recorrido
-EXEC SQL_NOOBS.insert_BI_dimension_tiempo
-EXEC SQL_NOOBS.insert_BI_rango_edad
 EXEC SQL_NOOBS.insert_BI_dimension_tarea
 EXEC SQL_NOOBS.insert_BI_dimension_material
 EXEC SQL_NOOBS.insert_BI_tareaXmaterial
+EXEC SQL_NOOBS.insert_BI_dimension_taller
+EXEC SQL_NOOBS.insert_BI_dimension_mecanico
+EXEC SQL_NOOBS.insert_BI_dimension_orden_trabajo
+EXEC SQL_NOOBS.insert_BI_dimension_tipo_tarea
+EXEC SQL_NOOBS.insert_BI_dimension_marca_camion
