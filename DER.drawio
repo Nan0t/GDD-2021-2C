@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2021-11-07T17:05:32.610Z" agent="5.0 (Windows)" etag="_BEXUM3X1dYnJK1YmezF" version="15.6.8" type="github" pages="4">
+<mxfile host="app.diagrams.net" modified="2021-11-07T18:09:41.984Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36" etag="lACtOEPrF-koSlMXxQdp" version="15.7.0" type="github" pages="4">
   <diagram id="R2lEEEUBdFMjLlhIrx00" name="Entidades básicas">
-    <mxGraphModel dx="1358" dy="792" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="15000" pageHeight="100000" math="0" shadow="0" extFonts="Permanent Marker^https://fonts.googleapis.com/css?family=Permanent+Marker">
+    <mxGraphModel dx="868" dy="450" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="15000" pageHeight="100000" math="0" shadow="0" extFonts="Permanent Marker^https://fonts.googleapis.com/css?family=Permanent+Marker">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -3191,7 +3191,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="IKd0WOz_jqeccw2qe-dH" name="DER- BI">
-    <mxGraphModel dx="1358" dy="792" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="5000" pageHeight="5000" math="0" shadow="0">
+    <mxGraphModel dx="1240" dy="643" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="5000" pageHeight="5000" math="0" shadow="0">
       <root>
         <mxCell id="Ofkc89xWVs2ZMS6IX_Jj-0" />
         <mxCell id="Ofkc89xWVs2ZMS6IX_Jj-1" parent="Ofkc89xWVs2ZMS6IX_Jj-0" />
@@ -4412,7 +4412,7 @@
             <mxRectangle width="240" height="30" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="X2hF-Sekjtt48Naf1WA1-527" value="" style="endArrow=diamondThin;endFill=1;endSize=24;html=1;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0.422;exitY=0.002;exitDx=0;exitDy=0;exitPerimeter=0;" parent="Ofkc89xWVs2ZMS6IX_Jj-1" source="X2hF-Sekjtt48Naf1WA1-457" target="X2hF-Sekjtt48Naf1WA1-312" edge="1">
+        <mxCell id="X2hF-Sekjtt48Naf1WA1-527" value="" style="endArrow=diamondThin;endFill=1;endSize=24;html=1;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0.422;exitY=0.002;exitDx=0;exitDy=0;exitPerimeter=0;" parent="Ofkc89xWVs2ZMS6IX_Jj-1" source="X2hF-Sekjtt48Naf1WA1-457" target="X2hF-Sekjtt48Naf1WA1-523" edge="1">
           <mxGeometry width="160" relative="1" as="geometry">
             <mxPoint x="3763" y="799.9999999999998" as="sourcePoint" />
             <mxPoint x="3763.1399999999994" y="690.4200000000001" as="targetPoint" />
