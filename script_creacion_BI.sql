@@ -68,6 +68,10 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].B
 	GO
 
 
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_hechos_viajes') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].BI_hechos_viajes
+	GO
+
 IF object_id(N'SQL_NOOBS.fn_BI_buscar_pk_rango', N'FN') IS NOT NULL
     DROP FUNCTION SQL_NOOBS.fn_BI_buscar_pk_rango
 GO
@@ -273,6 +277,7 @@ CREATE TABLE SQL_NOOBS.BI_dimensiones_mecanico (
 )
 GO
 
+
 CREATE TABLE SQL_NOOBS.BI_dimensiones_orden_trabajo (
 	orden_trabajo_id INT NOT NULL PRIMARY KEY IDENTITY(1, 1),
 	fecha nvarchar(255) NULL,
@@ -287,6 +292,21 @@ CREATE TABLE SQL_NOOBS.BI_dimensiones_marca_camion (
 GO
 
 -- CREACION FUNCIONES 
+
+CREATE TABLE SQL_NOOBS.BI_hechos_viajes(
+ dni decimal (18, 0) REFERENCES SQL_NOOBS.BI_dimension_chofer,
+ recorrido_id int REFERENCES SQL_NOOBS.BI_dimension_recorrido,
+ tipo_paquete_id int REFERENCES SQL_NOOBS.BI_dimension_tipo_paquete,
+ modelo_id int REFERENCES SQL_NOOBS.BI_dimension_modelo,
+ tiempo_id int REFERENCES SQL_NOOBS.BI_dimension_tiempo,
+ fecha_inicio datetime2(7)  ,
+ fecha_fin datetime2(3),
+ patente nvarchar(255) REFERENCES SQL_NOOBS.BI_dimension_camion,
+ consumo_combustible decimal (18, 2) NULL,
+ PRIMARY KEY (dni, recorrido_id,tipo_paquete_id,modelo_id,tiempo_id,patente,fecha_inicio,fecha_fin)
+)
+GO
+
 
 CREATE FUNCTION SQL_NOOBS.fn_BI_buscar_pk_rango  (@diferencia_edad AS int)
 RETURNS int
@@ -446,6 +466,7 @@ BEGIN
 END
 GO
 
+
 CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_taller
 AS
 BEGIN
@@ -515,6 +536,22 @@ BEGIN
 END
 GO
 
+
+CREATE PROCEDURE SQL_NOOBS.insert_BI_hechos_viajes
+AS
+BEGIN
+	INSERT INTO SQL_NOOBS.BI_hechos_viajes (dni,recorrido_id,tipo_paquete_id, modelo_id, 
+				tiempo_id,fecha_inicio,v.fecha_fin, patente, consumo_combustible)
+		SELECT v.chofer_id, v.recorrido_id, p.tipo_paquete_id, ca.modelo_id,
+		(SELECT id FROM SQL_NOOBS.BI_dimension_tiempo bi_diti
+			WHERE YEAR(v.fecha_inicio)=  bi_diti.Año AND 
+			DATEPART(QUARTER, v.fecha_inicio) = bi_diti.cuatrimestre),v.fecha_inicio,v.fecha_fin,
+			ca.patente,v.consumo_combustible
+		from SQL_NOOBS.viaje v join SQL_NOOBS.paquete p on (v.id = p.viaje_id)
+		join SQL_NOOBS.camion ca on (v.camion_id = ca.patente)
+END
+GO
+
 EXEC SQL_NOOBS.insert_BI_dimension_tiempo
 EXEC SQL_NOOBS.insert_BI_rango_edad
 EXEC SQL_NOOBS.insert_BI_dimension_chofer
@@ -531,3 +568,5 @@ EXEC SQL_NOOBS.insert_BI_dimension_mecanico
 EXEC SQL_NOOBS.insert_BI_dimension_orden_trabajo
 EXEC SQL_NOOBS.insert_BI_dimension_tipo_tarea
 EXEC SQL_NOOBS.insert_BI_dimension_marca_camion
+EXEC SQL_NOOBS.insert_BI_hechos_viajes
+
