@@ -52,7 +52,7 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].B
 	DROP TABLE [SQL_NOOBS].BI_dimension_taller
 	GO
 
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_dimensiones_tipo_tarea') AND type = 'U')
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_dimension_tipo_tarea') AND type = 'U')
 	DROP TABLE [SQL_NOOBS].BI_dimension_tipo_tarea
 	GO
 
@@ -76,6 +76,9 @@ IF object_id(N'SQL_NOOBS.fn_BI_buscar_pk_rango', N'FN') IS NOT NULL
     DROP FUNCTION SQL_NOOBS.fn_BI_buscar_pk_rango
 GO
 
+IF object_id(N'SQL_NOOBS.fn_BI_obtener_dim_tiempo', N'FN') IS NOT NULL
+    DROP FUNCTION SQL_NOOBS.fn_BI_obtener_dim_tiempo
+GO
 --DROP DE SP SI EXISTEN (POR SI SE HACEN CAMBIOS) 
 IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_recorrido]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
 DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_recorrido
@@ -296,8 +299,8 @@ GO
 
 CREATE TABLE SQL_NOOBS.BI_hechos_trabajo(
  codigo_tarea int REFERENCES SQL_NOOBS.BI_dimension_tarea,
- tipo_tarea_id int REFERENCES SQL_NOOBS.BI_dimensiones_tipo_tarea,
- taller_id int REFERENCES SQL_NOOBS.BI_dimensiones_taller,
+ tipo_tarea_id int REFERENCES SQL_NOOBS.BI_dimension_tipo_tarea,
+ taller_id int REFERENCES SQL_NOOBS.BI_dimension_taller,
  modelo_id int REFERENCES SQL_NOOBS.BI_dimension_modelo,
  tiempo_id int REFERENCES SQL_NOOBS.BI_dimension_tiempo,
  orden_trabajo_id int REFERENCES SQL_NOOBS.BI_dimension_orden_trabajo,
@@ -342,6 +345,15 @@ BEGIN
 END
 GO
 
+CREATE FUNCTION SQL_NOOBS.fn_BI_obtener_dim_tiempo (@fecha AS datetime)
+RETURNS int
+AS
+BEGIN
+	RETURN
+	(SELECT id FROM SQL_NOOBS.BI_dimension_tiempo bi_diti
+	WHERE YEAR(@fecha)=  bi_diti.Año AND DATEPART(QUARTER, @fecha) = bi_diti.cuatrimestre)
+END
+GO
 -- CREACION DE SP
 CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_material
 AS
@@ -557,9 +569,7 @@ BEGIN
 			v.recorrido_id, 
 			p.tipo_paquete_id, 
 			ca.modelo_id,
-			(SELECT id FROM SQL_NOOBS.BI_dimension_tiempo bi_diti
-			WHERE YEAR(v.fecha_inicio)=  bi_diti.Año 
-				AND DATEPART(QUARTER, v.fecha_inicio) = bi_diti.cuatrimestre),
+			SQL_NOOBS.fn_BI_obtener_dim_tiempo(v.fecha_inicio),
 			v.fecha_inicio,
 			v.fecha_fin,
 			ca.patente,
@@ -569,6 +579,43 @@ BEGIN
 		join SQL_NOOBS.camion ca on (v.camion_id = ca.patente)
 END
 GO
+
+CREATE PROCEDURE SQL_NOOBS.insert_BI_hechos_trabajo
+AS
+BEGIN
+	INSERT INTO SQL_NOOBS.BI_hechos_trabajo 
+	(codigo_tarea, tipo_tarea_id, taller_id, modelo_id, tiempo_id, orden_trabajo_id, mecanico_id, camion_id,
+ 	costo, tiempo_real_dias, fecha_inicio_real, fecha_fin_real)
+	 SELECT 
+	 	tarea.codigo,
+		tarea.tipo_tarea_id,
+		meca.taller_id,
+		camion.modelo_id,
+		SQL_NOOBS.fn_BI_obtener_dim_tiempo(tatr.fecha_fin_real),
+		(SELECT bi_ot.orden_trabajo_id
+		FROM BI_dimension_orden_trabajo bi_ot
+		WHERE or_tr.estado= bi_ot.estado AND or_tr.fecha = bi_ot.fecha),
+		tatr.mecanico_dni,
+		camion.patente,
+		NULL,
+		tatr.tiempo_real_dias,
+		tatr.fecha_inicio_real,
+		tatr.fecha_fin_real
+	 FROM SQL_NOOBS.tareaXorden_trabajo tatr
+	 INNER JOIN SQL_NOOBS.tarea 
+	 	ON tatr.tarea_id = tarea.codigo
+	 INNER JOIN SQL_NOOBS.orden_trabajo or_tr
+	 	ON tatr.orden_trabajo_id = or_tr.id
+	 INNER JOIN SQL_NOOBS.camion
+	 	ON or_tr.camion_id = camion.patente
+	 INNER JOIN SQL_NOOBS.mecanico meca
+	 	ON tatr.mecanico_dni = meca.dni
+END
+GO
+
+
+
+
 
 EXEC SQL_NOOBS.insert_BI_dimension_tiempo
 EXEC SQL_NOOBS.insert_BI_rango_edad
@@ -586,4 +633,4 @@ EXEC SQL_NOOBS.insert_BI_dimension_orden_trabajo
 EXEC SQL_NOOBS.insert_BI_dimension_tipo_tarea
 EXEC SQL_NOOBS.insert_BI_dimension_marca_camion
 EXEC SQL_NOOBS.insert_BI_hechos_viajes
-
+EXEC SQL_NOOBS.insert_BI_hechos_trabajo
