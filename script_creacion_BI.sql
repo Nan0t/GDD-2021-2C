@@ -1,6 +1,12 @@
 USE [GD2C2021]
 GO
 
+
+--BORRADO DE VISTAS
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].vw2_mantenimiento') AND type = 'V')
+	DROP VIEW [SQL_NOOBS].vw2_mantenimiento
+	GO
+
 --ME FIJO SI EXISTE LA TABLA, EN CASO DE EXISTIR HAGO UN DROP Y LUEGO LA CREO (POR SI METEMOS CAMBIOS)
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_hechos_viajes') AND type = 'U')
 	DROP TABLE [SQL_NOOBS].BI_hechos_viajes
@@ -680,5 +686,14 @@ EXEC SQL_NOOBS.insert_BI_dimension_marca_camion
 EXEC SQL_NOOBS.update_costo_tarea
 EXEC SQL_NOOBS.insert_BI_hechos_viajes
 EXEC SQL_NOOBS.insert_BI_hechos_trabajo
+GO
+--CREACION DE VISTAS
 
-
+--PUNTO 2
+CREATE VIEW SQL_NOOBS.vw2_mantenimiento (taller, camion, cuatrimestre, costo_mantenimiento)
+	as
+	select hect.taller_id, hect.camion_id, dimt.cuatrimestre,  sum(costo) 'costo mantenimiento'
+	from SQL_NOOBS.BI_hechos_trabajo hect join SQL_NOOBS.BI_dimension_tiempo dimt on (hect.tiempo_id = dimt.id)
+	group by hect.taller_id, hect.camion_id, dimt.cuatrimestre
+	with check option
+GO
