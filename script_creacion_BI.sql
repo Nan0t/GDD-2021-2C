@@ -174,9 +174,6 @@ IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[upda
 DROP PROCEDURE SQL_NOOBS.update_costo_tarea
 GO
 
--- DROP DE VISTAS
-DROP VIEW [SQL_NOOBS].[vw_bi_facturacion_total_por_cuatri_y_recorrido]
-GO
 --CREACION DE TABLAS
 
 CREATE TABLE SQL_NOOBS.BI_dimension_recorrido(
