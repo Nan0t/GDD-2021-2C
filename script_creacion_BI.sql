@@ -2,6 +2,9 @@ USE [GD2C2021]
 GO
 
 --ME FIJO SI EXISTE LA TABLA, EN CASO DE EXISTIR HAGO UN DROP Y LUEGO LA CREO (POR SI METEMOS CAMBIOS)
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_hechos_viajes') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].BI_hechos_viajes
+	GO
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_tareaXmaterial') AND type = 'U')
 	DROP TABLE [SQL_NOOBS].BI_tareaXmaterial
 	GO
@@ -23,9 +26,6 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].B
 	DROP TABLE [SQL_NOOBS].BI_dimension_tipo_paquete
 	GO
 
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_dimension_paquete') AND type = 'U')
-	DROP TABLE [SQL_NOOBS].BI_dimension_paquete
-	GO
 
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_dimension_chofer') AND type = 'U')
 	DROP TABLE [SQL_NOOBS].BI_dimension_chofer
@@ -67,11 +67,6 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].B
 	DROP TABLE [SQL_NOOBS].BI_rango_edad
 	GO
 
-
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_hechos_viajes') AND type = 'U')
-	DROP TABLE [SQL_NOOBS].BI_hechos_viajes
-	GO
-
 IF object_id(N'SQL_NOOBS.fn_BI_buscar_pk_rango', N'FN') IS NOT NULL
     DROP FUNCTION SQL_NOOBS.fn_BI_buscar_pk_rango
 GO
@@ -83,10 +78,6 @@ GO
 
 IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_tipo_paquete]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
 DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_tipo_paquete
-GO
-
-IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_paquete]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
-DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_paquete
 GO
 
 IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_chofer]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
@@ -124,15 +115,19 @@ GO
 IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_taller]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
 DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_taller
 GO
+
 IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_mecanico]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
 DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_mecanico
 GO
+
 IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_orden_trabajo]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
 DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_orden_trabajo
 GO
+
 IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_tipo_tarea]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
 DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_tipo_tarea
 GO
+
 IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_tipo_tarea]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
 DROP PROCEDURE SQL_NOOBS.insert_BI_tipo_tarea
 GO
@@ -140,6 +135,10 @@ GO
 IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_marca_camion]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
 DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_marca_camion
 GO
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_hechos_viajes]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_BI_hechos_viajes
+GO
+
 --CREACION DE TABLAS
 
 CREATE TABLE SQL_NOOBS.BI_dimension_recorrido(
@@ -162,12 +161,6 @@ CREATE TABLE SQL_NOOBS.BI_dimension_tipo_paquete(
 )
 GO
 
-CREATE TABLE SQL_NOOBS.BI_dimension_paquete(
-	paquete_id int PRIMARY KEY,
-	precio decimal (18,2) NULL,
-	cantidad int NULL
-)
-GO
 
 
 CREATE TABLE SQL_NOOBS.BI_dimension_modelo(
@@ -303,6 +296,7 @@ CREATE TABLE SQL_NOOBS.BI_hechos_viajes(
  fecha_fin datetime2(3),
  patente nvarchar(255) REFERENCES SQL_NOOBS.BI_dimension_camion,
  consumo_combustible decimal (18, 2) NULL,
+ cantidad_paquetes int NULL,
  PRIMARY KEY (dni, recorrido_id,tipo_paquete_id,modelo_id,tiempo_id,patente,fecha_inicio,fecha_fin)
 )
 GO
@@ -415,16 +409,7 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_paquete
-AS
-BEGIN 
-	INSERT INTO SQL_NOOBS.BI_dimension_paquete (paquete_id, precio, cantidad)
-		SELECT 
-			id, precio, cantidad
-		FROM 
-			SQL_NOOBS.paquete
-END
-GO
+
 
 CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_chofer
 AS
@@ -541,12 +526,20 @@ CREATE PROCEDURE SQL_NOOBS.insert_BI_hechos_viajes
 AS
 BEGIN
 	INSERT INTO SQL_NOOBS.BI_hechos_viajes (dni,recorrido_id,tipo_paquete_id, modelo_id, 
-				tiempo_id,fecha_inicio,v.fecha_fin, patente, consumo_combustible)
-		SELECT v.chofer_id, v.recorrido_id, p.tipo_paquete_id, ca.modelo_id,
-		(SELECT id FROM SQL_NOOBS.BI_dimension_tiempo bi_diti
-			WHERE YEAR(v.fecha_inicio)=  bi_diti.Año AND 
-			DATEPART(QUARTER, v.fecha_inicio) = bi_diti.cuatrimestre),v.fecha_inicio,v.fecha_fin,
-			ca.patente,v.consumo_combustible
+				tiempo_id,fecha_inicio,v.fecha_fin, patente, consumo_combustible, cantidad_paquetes)
+		SELECT 
+			v.chofer_id, 
+			v.recorrido_id, 
+			p.tipo_paquete_id, 
+			ca.modelo_id,
+			(SELECT id FROM SQL_NOOBS.BI_dimension_tiempo bi_diti
+			WHERE YEAR(v.fecha_inicio)=  bi_diti.Año 
+				AND DATEPART(QUARTER, v.fecha_inicio) = bi_diti.cuatrimestre),
+			v.fecha_inicio,
+			v.fecha_fin,
+			ca.patente,
+			v.consumo_combustible,
+			p.cantidad
 		from SQL_NOOBS.viaje v join SQL_NOOBS.paquete p on (v.id = p.viaje_id)
 		join SQL_NOOBS.camion ca on (v.camion_id = ca.patente)
 END
@@ -558,7 +551,6 @@ EXEC SQL_NOOBS.insert_BI_dimension_chofer
 EXEC SQL_NOOBS.insert_BI_dimension_modelo
 EXEC SQL_NOOBS.insert_BI_dimension_camion
 EXEC SQL_NOOBS.insert_BI_dimension_tipo_paquete
-EXEC SQL_NOOBS.insert_BI_dimension_paquete
 EXEC SQL_NOOBS.insert_BI_dimension_recorrido
 EXEC SQL_NOOBS.insert_BI_dimension_tarea
 EXEC SQL_NOOBS.insert_BI_dimension_material
