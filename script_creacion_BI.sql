@@ -159,6 +159,10 @@ GO
 IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[update_costo_tarea]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
 DROP PROCEDURE SQL_NOOBS.update_costo_tarea
 GO
+
+-- DROP DE VISTAS
+DROP VIEW [SQL_NOOBS].[vw_bi_facturacion_total_por_cuatri_y_recorrido]
+GO
 --CREACION DE TABLAS
 
 CREATE TABLE SQL_NOOBS.BI_dimension_recorrido(
@@ -625,7 +629,7 @@ BEGIN
 		tarea.tipo_tarea_id,
 		meca.taller_id,
 		camion.modelo_id,
-		SQL_NOOBS.fn_BI_obtener_dim_tiempo(tatr.fecha_fin_real),
+		SQL_NOOBS.fn_BI_obtener_dim_tiempo(tatr.fecha_inicio_real),
 		tatr.orden_trabajo_id,
 		tatr.mecanico_dni,
 		camion.patente,
@@ -667,3 +671,16 @@ EXEC SQL_NOOBS.insert_BI_dimension_marca_camion
 EXEC SQL_NOOBS.insert_BI_hechos_viajes
 EXEC SQL_NOOBS.insert_BI_hechos_trabajo
 EXEC SQL_NOOBS.update_costo_tarea
+GO
+
+--Facturación total por recorrido por cuatrimestre. (En función de la cantidad y tipo de paquetes que transporta el camión y el recorrido)
+CREATE VIEW SQL_NOOBS.vw_bi_facturacion_total_por_cuatri_y_recorrido (facturacion, año, cuatrimestre, recorrido)
+AS
+SELECT SUM((tp.precio + r.precio)* v.cantidad_paquetes )'facturacion total', t.Año, t.cuatrimestre, r.recorrido_id
+FROM SQL_NOOBS.BI_hechos_viajes v JOIN SQL_NOOBS.BI_dimension_tiempo t on(v.tiempo_id = t.id)
+    JOIN SQL_NOOBS.BI_dimension_recorrido r on (r.recorrido_id = v.recorrido_id)
+    JOIN SQL_NOOBS.BI_dimension_tipo_paquete tp on (v.tipo_paquete_id = tp.tipo_paquete_id)  
+group by t.cuatrimestre, r.recorrido_id, t.Año
+WITH CHECK OPTION
+GO
+
