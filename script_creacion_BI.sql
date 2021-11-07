@@ -7,6 +7,10 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].v
 	DROP VIEW [SQL_NOOBS].vw_mantenimiento
 	GO
 
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].vw_materiales_por_taller') AND type = 'V')
+DROP VIEW [SQL_NOOBS].vw_materiales_por_taller
+GO
+
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].vw_tareas_por_modelo') AND type = 'V')
 	DROP VIEW [SQL_NOOBS].vw_tareas_por_modelo
 	GO
@@ -749,3 +753,20 @@ where codigo_tarea in (select top 5 codigo_tarea
     group by  modelo_id, codigo_tarea
     order by COUNT(*) desc )
 group by t.modelo_id, t.codigo_tarea
+GO
+
+-- los 10 materiales mas usados por taller
+CREATE VIEW SQL_NOOBS.vw_materiales_por_taller (taller,material_id, cantidad)
+as
+select t.taller_id , txm.material_id, SUM(txm.cantidad_material) 'cantidad'
+from SQL_NOOBS.BI_hechos_trabajo t 
+	join SQL_NOOBS.BI_tareaXmaterial txm on (txm.tarea_id = t.codigo_tarea)
+where txm.material_id in (select top 10 material_id
+    from SQL_NOOBS.BI_hechos_trabajo t2
+	join SQL_NOOBS.BI_tareaXmaterial txm2 on (txm2.tarea_id = t2.codigo_tarea)
+    where t2.taller_id = t.taller_id
+    group by  txm2.material_id, t2.taller_id
+    order by sum(cantidad_material) desc)
+group by t.taller_id , txm.material_id
+GO
+
