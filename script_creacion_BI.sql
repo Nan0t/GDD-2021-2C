@@ -3,8 +3,12 @@ GO
 
 
 --BORRADO DE VISTAS
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].vw2_mantenimiento') AND type = 'V')
-	DROP VIEW [SQL_NOOBS].vw2_mantenimiento
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].vw_mantenimiento') AND type = 'V')
+	DROP VIEW [SQL_NOOBS].vw_mantenimiento
+	GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].vw_tareas_por_modelo') AND type = 'V')
+	DROP VIEW [SQL_NOOBS].vw_tareas_por_modelo
 	GO
 
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'SQL_NOOBS.vw_bi_facturacion_total_por_cuatri_y_recorrido') AND type = 'V')
@@ -710,8 +714,8 @@ GO
 
 --CREACION DE VISTAS
 
---PUNTO 2
-CREATE VIEW SQL_NOOBS.vw2_mantenimiento (taller, camion, cuatrimestre, costo_mantenimiento)
+--Costo total de mantenimiento por camión, por taller, por cuatrimestre
+CREATE VIEW SQL_NOOBS.vw_mantenimiento (taller, camion, cuatrimestre, costo_mantenimiento)
 	as
 	select hect.taller_id, hect.camion_id, dimt.cuatrimestre,  sum(costo) 'costo mantenimiento'
 	from SQL_NOOBS.BI_hechos_trabajo hect join SQL_NOOBS.BI_dimension_tiempo dimt on (hect.tiempo_id = dimt.id)
@@ -733,3 +737,15 @@ INNER JOIN SQL_NOOBS.BI_dimension_tarea tarea
 GROUP BY di_ta.nombre, tarea.descripcion_tarea
 WITH CHECK OPTION
 GO
+
+--Las 5 tareas que más se realizan por modelo de camión
+CREATE VIEW SQL_NOOBS.vw_tareas_por_modelo (modelo_id, codigo_tarea, cantidad)
+as
+select t.modelo_id, t.codigo_tarea, COUNT(*)
+from SQL_NOOBS.BI_hechos_trabajo t
+where codigo_tarea in (select top 5 codigo_tarea
+    from SQL_NOOBS.BI_hechos_trabajo
+    where modelo_id = t.modelo_id
+    group by  modelo_id, codigo_tarea
+    order by COUNT(*) desc )
+group by t.modelo_id, t.codigo_tarea
