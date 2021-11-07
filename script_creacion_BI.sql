@@ -1,6 +1,16 @@
 USE [GD2C2021]
 GO
 
+
+--BORRADO DE VISTAS
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].vw2_mantenimiento') AND type = 'V')
+	DROP VIEW [SQL_NOOBS].vw2_mantenimiento
+	GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'SQL_NOOBS.vw_bi_facturacion_total_por_cuatri_y_recorrido') AND type = 'V')
+	DROP VIEW SQL_NOOBS.vw_bi_facturacion_total_por_cuatri_y_recorrido
+	GO
+
 --ME FIJO SI EXISTE LA TABLA, EN CASO DE EXISTIR HAGO UN DROP Y LUEGO LA CREO (POR SI METEMOS CAMBIOS)
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_hechos_viajes') AND type = 'U')
 	DROP TABLE [SQL_NOOBS].BI_hechos_viajes
@@ -71,9 +81,13 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].B
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_rango_edad') AND type = 'U')
 	DROP TABLE [SQL_NOOBS].BI_rango_edad
 	GO
-
+--DROP DE FUNCIONES SI EXISTEN
 IF object_id(N'SQL_NOOBS.fn_BI_buscar_pk_rango', N'FN') IS NOT NULL
     DROP FUNCTION SQL_NOOBS.fn_BI_buscar_pk_rango
+GO
+
+IF object_id(N'SQL_NOOBS.fn_BI_obtener_costo_mantenimiento', N'FN') IS NOT NULL
+    DROP FUNCTION SQL_NOOBS.fn_BI_obtener_costo_mantenimiento
 GO
 
 IF object_id(N'SQL_NOOBS.fn_BI_obtener_dim_tiempo', N'FN') IS NOT NULL
@@ -381,6 +395,19 @@ BEGIN
 	)
 END
 GO
+
+CREATE FUNCTION SQL_NOOBS.fn_bi_obtener_costo_mantenimiento (@tarea_id int, @mecanico_dni decimal (18,0), @dias int)
+RETURNS decimal(10,2)
+AS
+BEGIN
+	declare @costo decimal(10,2)
+	select @costo = costo from SQL_NOOBS.BI_dimension_tarea where codigo = @tarea_id
+	declare @mano_de_obra int 
+	select @mano_de_obra = costo_hora from SQL_NOOBS.BI_dimension_mecanico where @mecanico_dni = dni
+	return @costo + @mano_de_obra * @dias
+END
+GO
+
 -- CREACION DE SP
 CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_material
 AS
@@ -633,7 +660,7 @@ BEGIN
 		tatr.orden_trabajo_id,
 		tatr.mecanico_dni,
 		camion.patente,
-		NULL,
+		SQL_NOOBS.fn_bi_obtener_costo_mantenimiento (tarea.codigo,tatr.mecanico_dni ,tatr.tiempo_real_dias ),
 		tatr.tiempo_real_dias,
 		tatr.fecha_inicio_real,
 		tatr.fecha_fin_real
@@ -648,10 +675,6 @@ BEGIN
 	 	ON tatr.mecanico_dni = meca.dni
 END
 GO
-
-
-
-
 
 EXEC SQL_NOOBS.insert_BI_dimension_tiempo
 EXEC SQL_NOOBS.insert_BI_rango_edad
@@ -668,9 +691,9 @@ EXEC SQL_NOOBS.insert_BI_dimension_mecanico
 EXEC SQL_NOOBS.insert_BI_dimension_orden_trabajo
 EXEC SQL_NOOBS.insert_BI_dimension_tipo_tarea
 EXEC SQL_NOOBS.insert_BI_dimension_marca_camion
+EXEC SQL_NOOBS.update_costo_tarea
 EXEC SQL_NOOBS.insert_BI_hechos_viajes
 EXEC SQL_NOOBS.insert_BI_hechos_trabajo
-EXEC SQL_NOOBS.update_costo_tarea
 GO
 
 --Facturación total por recorrido por cuatrimestre. (En función de la cantidad y tipo de paquetes que transporta el camión y el recorrido)
@@ -684,3 +707,14 @@ group by t.cuatrimestre, r.recorrido_id, t.Año
 WITH CHECK OPTION
 GO
 
+GO
+--CREACION DE VISTAS
+
+--PUNTO 2
+CREATE VIEW SQL_NOOBS.vw2_mantenimiento (taller, camion, cuatrimestre, costo_mantenimiento)
+	as
+	select hect.taller_id, hect.camion_id, dimt.cuatrimestre,  sum(costo) 'costo mantenimiento'
+	from SQL_NOOBS.BI_hechos_trabajo hect join SQL_NOOBS.BI_dimension_tiempo dimt on (hect.tiempo_id = dimt.id)
+	group by hect.taller_id, hect.camion_id, dimt.cuatrimestre
+	with check option
+GO
