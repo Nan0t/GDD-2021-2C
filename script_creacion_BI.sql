@@ -10,6 +10,10 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].v
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'SQL_NOOBS.vw_bi_facturacion_total_por_cuatri_y_recorrido') AND type = 'V')
 	DROP VIEW SQL_NOOBS.vw_bi_facturacion_total_por_cuatri_y_recorrido
 	GO
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'SQL_NOOBS.vw_desviacion_promedio_tarea_por_taller') AND type = 'V')
+	DROP VIEW SQL_NOOBS.vw_desviacion_promedio_tarea_por_taller
+	GO
+
 
 --ME FIJO SI EXISTE LA TABLA, EN CASO DE EXISTIR HAGO UN DROP Y LUEGO LA CREO (POR SI METEMOS CAMBIOS)
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_hechos_viajes') AND type = 'U')
@@ -704,7 +708,6 @@ group by t.cuatrimestre, r.recorrido_id, t.Año
 WITH CHECK OPTION
 GO
 
-GO
 --CREACION DE VISTAS
 
 --PUNTO 2
@@ -714,4 +717,19 @@ CREATE VIEW SQL_NOOBS.vw2_mantenimiento (taller, camion, cuatrimestre, costo_man
 	from SQL_NOOBS.BI_hechos_trabajo hect join SQL_NOOBS.BI_dimension_tiempo dimt on (hect.tiempo_id = dimt.id)
 	group by hect.taller_id, hect.camion_id, dimt.cuatrimestre
 	with check option
+GO
+
+--Desvío promedio de cada tarea x taller.
+CREATE VIEW SQL_NOOBS.vw_desviacion_promedio_tarea_por_taller (taller, tarea, [promedio de desviacion])
+AS
+SELECT di_ta.nombre,
+    tarea.descripcion_tarea,
+    STDEV(tiempo_real_dias)
+FROM SQL_NOOBS.BI_hechos_trabajo he_tr
+INNER JOIN SQL_NOOBS.BI_dimension_taller di_ta
+    ON he_tr.taller_id = di_ta.taller_id
+INNER JOIN SQL_NOOBS.BI_dimension_tarea tarea
+    ON he_tr.codigo_tarea = tarea.codigo
+GROUP BY di_ta.nombre, tarea.descripcion_tarea
+WITH CHECK OPTION
 GO
