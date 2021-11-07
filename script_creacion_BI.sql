@@ -292,7 +292,7 @@ GO
 
 
 CREATE TABLE SQL_NOOBS.BI_dimension_orden_trabajo (
-	orden_trabajo_id INT NOT NULL PRIMARY KEY IDENTITY(1, 1),
+	orden_trabajo_id INT NOT NULL PRIMARY KEY,
 	fecha nvarchar(255) NULL,
 	estado nvarchar(255) NULL
 )
@@ -560,8 +560,9 @@ GO
 CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_orden_trabajo
 AS
 BEGIN
-	INSERT INTO SQL_NOOBS.BI_dimension_orden_trabajo(fecha,estado)
-		SELECT DISTINCT
+	INSERT INTO SQL_NOOBS.BI_dimension_orden_trabajo(orden_trabajo_id, fecha, estado)
+		SELECT
+                id,
 				fecha, 
 				estado
 		FROM 
@@ -625,9 +626,7 @@ BEGIN
 		meca.taller_id,
 		camion.modelo_id,
 		SQL_NOOBS.fn_BI_obtener_dim_tiempo(tatr.fecha_fin_real),
-		(SELECT bi_ot.orden_trabajo_id
-		FROM BI_dimension_orden_trabajo bi_ot
-		WHERE or_tr.estado= bi_ot.estado AND or_tr.fecha = bi_ot.fecha),
+		tatr.orden_trabajo_id,
 		tatr.mecanico_dni,
 		camion.patente,
 		NULL,
