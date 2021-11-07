@@ -71,9 +71,13 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].B
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_rango_edad') AND type = 'U')
 	DROP TABLE [SQL_NOOBS].BI_rango_edad
 	GO
-
+--DROP DE FUNCIONES SI EXISTEN
 IF object_id(N'SQL_NOOBS.fn_BI_buscar_pk_rango', N'FN') IS NOT NULL
     DROP FUNCTION SQL_NOOBS.fn_BI_buscar_pk_rango
+GO
+
+IF object_id(N'SQL_NOOBS.fn_BI_obtener_costo_mantenimiento', N'FN') IS NOT NULL
+    DROP FUNCTION SQL_NOOBS.fn_BI_obtener_costo_mantenimiento
 GO
 
 IF object_id(N'SQL_NOOBS.fn_BI_obtener_dim_tiempo', N'FN') IS NOT NULL
@@ -377,6 +381,19 @@ BEGIN
 	)
 END
 GO
+
+CREATE FUNCTION SQL_NOOBS.fn_bi_obtener_costo_mantenimiento (@tarea_id int, @mecanico_dni decimal (18,0), @dias int)
+RETURNS decimal(10,2)
+AS
+BEGIN
+	declare @costo decimal(10,2)
+	select @costo = costo from SQL_NOOBS.BI_dimension_tarea where codigo = @tarea_id
+	declare @mano_de_obra int 
+	select @mano_de_obra = costo_hora from SQL_NOOBS.BI_dimension_mecanico where @mecanico_dni = dni
+	return @costo + @mano_de_obra * @dias
+END
+GO
+
 -- CREACION DE SP
 CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_material
 AS
@@ -630,7 +647,7 @@ BEGIN
 		WHERE or_tr.estado= bi_ot.estado AND or_tr.fecha = bi_ot.fecha),
 		tatr.mecanico_dni,
 		camion.patente,
-		NULL,
+		SQL_NOOBS.fn_bi_obtener_costo_mantenimiento (tarea.codigo,tatr.mecanico_dni ,tatr.tiempo_real_dias ),
 		tatr.tiempo_real_dias,
 		tatr.fecha_inicio_real,
 		tatr.fecha_fin_real
@@ -645,10 +662,6 @@ BEGIN
 	 	ON tatr.mecanico_dni = meca.dni
 END
 GO
-
-
-
-
 
 EXEC SQL_NOOBS.insert_BI_dimension_tiempo
 EXEC SQL_NOOBS.insert_BI_rango_edad
@@ -665,6 +678,8 @@ EXEC SQL_NOOBS.insert_BI_dimension_mecanico
 EXEC SQL_NOOBS.insert_BI_dimension_orden_trabajo
 EXEC SQL_NOOBS.insert_BI_dimension_tipo_tarea
 EXEC SQL_NOOBS.insert_BI_dimension_marca_camion
+EXEC SQL_NOOBS.update_costo_tarea
 EXEC SQL_NOOBS.insert_BI_hechos_viajes
 EXEC SQL_NOOBS.insert_BI_hechos_trabajo
-EXEC SQL_NOOBS.update_costo_tarea
+
+
