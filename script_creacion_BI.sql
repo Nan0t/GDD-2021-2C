@@ -5,6 +5,11 @@ GO
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_hechos_viajes') AND type = 'U')
 	DROP TABLE [SQL_NOOBS].BI_hechos_viajes
 	GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_hechos_trabajo') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].BI_hechos_trabajo
+	GO
+
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_tareaXmaterial') AND type = 'U')
 	DROP TABLE [SQL_NOOBS].BI_tareaXmaterial
 	GO
@@ -43,24 +48,24 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].B
 	DROP TABLE [SQL_NOOBS].BI_dimension_tiempo
 	GO
 
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_dimensiones_taller') AND type = 'U')
-	DROP TABLE [SQL_NOOBS].BI_dimensiones_taller
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_dimension_taller') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].BI_dimension_taller
 	GO
 
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_dimensiones_tipo_tarea') AND type = 'U')
-	DROP TABLE [SQL_NOOBS].BI_dimensiones_tipo_tarea
+	DROP TABLE [SQL_NOOBS].BI_dimension_tipo_tarea
 	GO
 
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_dimensiones_mecanico') AND type = 'U')
-	DROP TABLE [SQL_NOOBS].BI_dimensiones_mecanico
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_dimension_mecanico') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].BI_dimension_mecanico
 	GO
 
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_dimensiones_orden_trabajo') AND type = 'U')
-	DROP TABLE [SQL_NOOBS].BI_dimensiones_orden_trabajo
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_dimension_orden_trabajo') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].BI_dimension_orden_trabajo
 	GO
 
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_dimensiones_marca_camion') AND type = 'U')
-	DROP TABLE [SQL_NOOBS].BI_dimensiones_marca_camion
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_dimension_marca_camion') AND type = 'U')
+	DROP TABLE [SQL_NOOBS].BI_dimension_marca_camion
 	GO
 
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_rango_edad') AND type = 'U')
@@ -135,8 +140,13 @@ GO
 IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_marca_camion]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
 DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_marca_camion
 GO
+
 IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_hechos_viajes]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
 DROP PROCEDURE SQL_NOOBS.insert_BI_hechos_viajes
+GO
+
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_hechos_trabajo]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.insert_BI_hechos_trabajo
 GO
 
 --CREACION DE TABLAS
@@ -237,7 +247,7 @@ CREATE TABLE SQL_NOOBS.BI_dimension_chofer(
 	ON UPDATE CASCADE
 )
 GO
-CREATE TABLE SQL_NOOBS.BI_dimensiones_taller (
+CREATE TABLE SQL_NOOBS.BI_dimension_taller (
 	taller_id int NOT NULL IDENTITY(1, 1) PRIMARY KEY,  
 	nombre nvarchar(255) NULL,
 	mail nvarchar(255) NULL,
@@ -247,13 +257,13 @@ CREATE TABLE SQL_NOOBS.BI_dimensiones_taller (
 )
 GO
 
-CREATE TABLE SQL_NOOBS.BI_dimensiones_tipo_tarea (
+CREATE TABLE SQL_NOOBS.BI_dimension_tipo_tarea (
 	id int NOT NULL IDENTITY(1, 1) PRIMARY KEY,
 	tipo_tarea_descripcion nvarchar(255) NULL
 )
 GO
 
-CREATE TABLE SQL_NOOBS.BI_dimensiones_mecanico (
+CREATE TABLE SQL_NOOBS.BI_dimension_mecanico (
 	dni decimal(18,0) NOT NULL PRIMARY KEY,  
 	nombre nvarchar(255) NULL,
 	apellido nvarchar(255) NULL,
@@ -271,37 +281,52 @@ CREATE TABLE SQL_NOOBS.BI_dimensiones_mecanico (
 GO
 
 
-CREATE TABLE SQL_NOOBS.BI_dimensiones_orden_trabajo (
+CREATE TABLE SQL_NOOBS.BI_dimension_orden_trabajo (
 	orden_trabajo_id INT NOT NULL PRIMARY KEY IDENTITY(1, 1),
 	fecha nvarchar(255) NULL,
 	estado nvarchar(255) NULL
 )
 GO
 
-CREATE TABLE SQL_NOOBS.BI_dimensiones_marca_camion (
+CREATE TABLE SQL_NOOBS.BI_dimension_marca_camion (
 	id INT NOT NULL PRIMARY KEY IDENTITY(1, 1),
 	descripcion nvarchar(255) NULL
 )
 GO
 
--- CREACION FUNCIONES 
+CREATE TABLE SQL_NOOBS.BI_hechos_trabajo(
+ codigo_tarea int REFERENCES SQL_NOOBS.BI_dimension_tarea,
+ tipo_tarea_id int REFERENCES SQL_NOOBS.BI_dimensiones_tipo_tarea,
+ taller_id int REFERENCES SQL_NOOBS.BI_dimensiones_taller,
+ modelo_id int REFERENCES SQL_NOOBS.BI_dimension_modelo,
+ tiempo_id int REFERENCES SQL_NOOBS.BI_dimension_tiempo,
+ orden_trabajo_id int REFERENCES SQL_NOOBS.BI_dimension_orden_trabajo,
+ mecanico_id decimal(18,0) REFERENCES SQL_NOOBS.BI_dimension_mecanico,
+ camion_id nvarchar(255) REFERENCES SQL_NOOBS.BI_dimension_camion,
+ costo decimal (10,2) NULL,
+ tiempo_real_dias int NULL,
+ fecha_inicio_real datetime2(3) ,
+ fecha_fin_real datetime2(3),
+ PRIMARY KEY (codigo_tarea, tipo_tarea_id, taller_id, modelo_id, tiempo_id, orden_trabajo_id, mecanico_id, camion_id)
+)
+GO
 
 CREATE TABLE SQL_NOOBS.BI_hechos_viajes(
- dni decimal (18, 0) REFERENCES SQL_NOOBS.BI_dimension_chofer,
+ chofer_id decimal (18, 0) REFERENCES SQL_NOOBS.BI_dimension_chofer,
  recorrido_id int REFERENCES SQL_NOOBS.BI_dimension_recorrido,
  tipo_paquete_id int REFERENCES SQL_NOOBS.BI_dimension_tipo_paquete,
  modelo_id int REFERENCES SQL_NOOBS.BI_dimension_modelo,
  tiempo_id int REFERENCES SQL_NOOBS.BI_dimension_tiempo,
  fecha_inicio datetime2(7)  ,
  fecha_fin datetime2(3),
- patente nvarchar(255) REFERENCES SQL_NOOBS.BI_dimension_camion,
+ camion_id nvarchar(255) REFERENCES SQL_NOOBS.BI_dimension_camion,
  consumo_combustible decimal (18, 2) NULL,
  cantidad_paquetes int NULL,
- PRIMARY KEY (dni, recorrido_id,tipo_paquete_id,modelo_id,tiempo_id,patente,fecha_inicio,fecha_fin)
+ PRIMARY KEY (chofer_id, recorrido_id, tipo_paquete_id, modelo_id, tiempo_id, camion_id, fecha_inicio, fecha_fin)
 )
 GO
 
-
+-- CREACION FUNCIONES 
 CREATE FUNCTION SQL_NOOBS.fn_BI_buscar_pk_rango  (@diferencia_edad AS int)
 RETURNS int
 AS
@@ -455,7 +480,7 @@ GO
 CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_taller
 AS
 BEGIN
-	INSERT INTO SQL_NOOBS.BI_dimensiones_taller (nombre,mail, telefono, direccion,ciudad)
+	INSERT INTO SQL_NOOBS.BI_dimension_taller (nombre,mail, telefono, direccion,ciudad)
 		SELECT 
 				nombre,
 				mail, 
@@ -470,7 +495,7 @@ GO
 CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_mecanico
 AS
 BEGIN
-	INSERT INTO SQL_NOOBS.BI_dimensiones_mecanico (dni,nombre,apellido,direccion,telefono,mail,fecha_nacimiento,legajo,costo_hora, rango_edad_id)
+	INSERT INTO SQL_NOOBS.BI_dimension_mecanico (dni,nombre,apellido,direccion,telefono,mail,fecha_nacimiento,legajo,costo_hora, rango_edad_id)
 		SELECT 
 				dni, 
 				nombre, 
@@ -490,7 +515,7 @@ GO
 CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_orden_trabajo
 AS
 BEGIN
-	INSERT INTO SQL_NOOBS.BI_dimensiones_orden_trabajo(fecha,estado)
+	INSERT INTO SQL_NOOBS.BI_dimension_orden_trabajo(fecha,estado)
 		SELECT DISTINCT
 				fecha, 
 				estado
@@ -502,7 +527,7 @@ GO
 CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_tipo_tarea
 AS
 BEGIN
-	INSERT INTO SQL_NOOBS.BI_dimensiones_tipo_tarea (tipo_tarea_descripcion)
+	INSERT INTO SQL_NOOBS.BI_dimension_tipo_tarea (tipo_tarea_descripcion)
 		SELECT 
 				tipo_tarea_descripcion
 		FROM 
@@ -513,7 +538,7 @@ GO
 CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_marca_camion
 AS
 BEGIN
-	INSERT INTO SQL_NOOBS.BI_dimensiones_marca_camion (descripcion)
+	INSERT INTO SQL_NOOBS.BI_dimension_marca_camion (descripcion)
 		SELECT 
 				DISTINCT marca_camion
 		FROM 
@@ -525,8 +550,8 @@ GO
 CREATE PROCEDURE SQL_NOOBS.insert_BI_hechos_viajes
 AS
 BEGIN
-	INSERT INTO SQL_NOOBS.BI_hechos_viajes (dni,recorrido_id,tipo_paquete_id, modelo_id, 
-				tiempo_id,fecha_inicio,v.fecha_fin, patente, consumo_combustible, cantidad_paquetes)
+	INSERT INTO SQL_NOOBS.BI_hechos_viajes (chofer_id,recorrido_id,tipo_paquete_id, modelo_id, 
+				tiempo_id,fecha_inicio,v.fecha_fin, camion_id, consumo_combustible, cantidad_paquetes)
 		SELECT 
 			v.chofer_id, 
 			v.recorrido_id, 
