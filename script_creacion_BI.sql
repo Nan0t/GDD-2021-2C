@@ -79,6 +79,10 @@ GO
 IF object_id(N'SQL_NOOBS.fn_BI_obtener_dim_tiempo', N'FN') IS NOT NULL
     DROP FUNCTION SQL_NOOBS.fn_BI_obtener_dim_tiempo
 GO
+
+IF object_id(N'SQL_NOOBS.fn_bi_obtener_costo_tarea', N'FN') IS NOT NULL
+    DROP FUNCTION SQL_NOOBS.fn_bi_obtener_costo_tarea
+GO
 --DROP DE SP SI EXISTEN (POR SI SE HACEN CAMBIOS) 
 IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_recorrido]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
 DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_recorrido
@@ -152,6 +156,9 @@ IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[inse
 DROP PROCEDURE SQL_NOOBS.insert_BI_hechos_trabajo
 GO
 
+IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[update_costo_tarea]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+DROP PROCEDURE SQL_NOOBS.update_costo_tarea
+GO
 --CREACION DE TABLAS
 
 CREATE TABLE SQL_NOOBS.BI_dimension_recorrido(
@@ -354,6 +361,22 @@ BEGIN
 	WHERE YEAR(@fecha)=  bi_diti.Año AND DATEPART(QUARTER, @fecha) = bi_diti.cuatrimestre)
 END
 GO
+
+CREATE FUNCTION SQL_NOOBS.fn_bi_obtener_costo_tarea (@tarea_id int)
+RETURNS decimal(10,2)
+AS
+BEGIN
+	RETURN
+	(SELECT SUM(cantidad_material* precio)
+	FROM SQL_NOOBS.tarea tarea
+	JOIN SQL_NOOBS.BI_tareaXmaterial taxma
+		ON tarea.codigo = taxma.tarea_id
+	JOIN SQL_NOOBS.BI_dimension_material mat
+		ON taxma.material_id= mat.cod
+	WHERE tarea.codigo = @tarea_id
+	)
+END
+GO
 -- CREACION DE SP
 CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_material
 AS
@@ -366,11 +389,21 @@ GO
 CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_tarea
 AS
 BEGIN
-	INSERT INTO SQL_NOOBS.BI_dimension_tarea (codigo, tiempo_estimado_dias, descripcion_tarea)
+	INSERT INTO SQL_NOOBS.BI_dimension_tarea (codigo, tiempo_estimado_dias, descripcion_tarea, costo)
 		SELECT codigo, 
 			tiempo_estimado_dias, 
-			descripcion_tarea 
+			descripcion_tarea,
+			NULL
 		FROM SQL_NOOBS.tarea
+END
+GO
+
+CREATE PROCEDURE SQL_NOOBS.update_costo_tarea
+AS
+BEGIN
+	UPDATE SQL_NOOBS.BI_dimension_tarea
+	SET costo = SQL_NOOBS.fn_bi_obtener_costo_tarea(codigo)
+
 END
 GO
 
@@ -624,8 +657,8 @@ EXEC SQL_NOOBS.insert_BI_dimension_modelo
 EXEC SQL_NOOBS.insert_BI_dimension_camion
 EXEC SQL_NOOBS.insert_BI_dimension_tipo_paquete
 EXEC SQL_NOOBS.insert_BI_dimension_recorrido
-EXEC SQL_NOOBS.insert_BI_dimension_tarea
 EXEC SQL_NOOBS.insert_BI_dimension_material
+EXEC SQL_NOOBS.insert_BI_dimension_tarea
 EXEC SQL_NOOBS.insert_BI_tareaXmaterial
 EXEC SQL_NOOBS.insert_BI_dimension_taller
 EXEC SQL_NOOBS.insert_BI_dimension_mecanico
@@ -634,3 +667,4 @@ EXEC SQL_NOOBS.insert_BI_dimension_tipo_tarea
 EXEC SQL_NOOBS.insert_BI_dimension_marca_camion
 EXEC SQL_NOOBS.insert_BI_hechos_viajes
 EXEC SQL_NOOBS.insert_BI_hechos_trabajo
+EXEC SQL_NOOBS.update_costo_tarea
