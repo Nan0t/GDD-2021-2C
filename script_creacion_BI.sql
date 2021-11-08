@@ -860,14 +860,6 @@ where txm.material_id in (select top 10 material_id
 group by t.taller_id , txm.material_id
 GO
 
---ganancia por camion
-CREATE VIEW SQL_NOOBS.vw_ganancia_por_camion (patente,ganancia)
-as
-select patente, SQL_NOOBS.fn_bi_obtener_ingresos(patente)-SQL_NOOBS.fn_bi_obtener_costos_camion(patente) 'ganancia'
-from SQL_NOOBS.BI_dimension_camion 
-with check option
-GO
-
 --Costo promedio por rango etario de chofer
 CREATE VIEW SQL_NOOBS.vw_costo_por_rango_etario ([rango edad], [costo promedio])
 AS
@@ -879,6 +871,22 @@ GROUP BY ra_ed.rango
 WITH CHECK OPTION 
 GO
 
+--ganancia por camion
+CREATE VIEW SQL_NOOBS.vw_ganancia_por_camion (patente,ganancia)
+as
+select patente, SQL_NOOBS.fn_bi_obtener_ingresos(patente)-SQL_NOOBS.fn_bi_obtener_costos_camion(patente) 'ganancia'
+from SQL_NOOBS.BI_dimension_camion 
+with check option
+GO
 
 
 
+--EJECUCIÓN DE QUERY DE VISTAS POR ORDEN DE ENUNCIADO
+SELECT * FROM SQL_NOOBS.vw_dias_sin_trabajar
+SELECT * FROM SQL_NOOBS.vw_mantenimiento
+SELECT * FROM SQL_NOOBS.vw_desviacion_promedio_tarea_por_taller
+SELECT * FROM SQL_NOOBS.vw_tareas_por_modelo
+SELECT * FROM SQL_NOOBS.vw_materiales_por_taller
+SELECT * FROM SQL_NOOBS.vw_bi_facturacion_total_por_cuatri_y_recorrido
+SELECT * FROM SQL_NOOBS.vw_costo_por_rango_etario
+SELECT * FROM SQL_NOOBS.vw_ganancia_por_camion
