@@ -6,6 +6,10 @@ GO
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].vw_mantenimiento') AND type = 'V')
 	DROP VIEW [SQL_NOOBS].vw_mantenimiento
 	GO
+	
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].vw_costo_por_rango_etario') AND type = 'V')
+DROP VIEW [SQL_NOOBS].vw_costo_por_rango_etario
+GO
 
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].vw_materiales_por_taller') AND type = 'V')
 DROP VIEW [SQL_NOOBS].vw_materiales_por_taller
@@ -21,7 +25,10 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'SQL_NOOBS.vw_
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'SQL_NOOBS.vw_desviacion_promedio_tarea_por_taller') AND type = 'V')
 	DROP VIEW SQL_NOOBS.vw_desviacion_promedio_tarea_por_taller
 	GO
-
+	
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'SQL_NOOBS.vw_ganancia_por_camion') AND type = 'V')
+DROP VIEW SQL_NOOBS.vw_ganancia_por_camion
+GO
 
 --ME FIJO SI EXISTE LA TABLA, EN CASO DE EXISTIR HAGO UN DROP Y LUEGO LA CREO (POR SI METEMOS CAMBIOS)
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].BI_hechos_viajes') AND type = 'U')
@@ -94,8 +101,17 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].B
 	DROP TABLE [SQL_NOOBS].BI_rango_edad
 	GO
 --DROP DE FUNCIONES SI EXISTEN
+
 IF object_id(N'SQL_NOOBS.fn_BI_buscar_pk_rango', N'FN') IS NOT NULL
     DROP FUNCTION SQL_NOOBS.fn_BI_buscar_pk_rango
+GO
+
+IF object_id(N'SQL_NOOBS.fn_bi_obtener_costos_camion', N'FN') IS NOT NULL
+    DROP FUNCTION SQL_NOOBS.fn_bi_obtener_costos_camion
+GO
+
+IF object_id(N'SQL_NOOBS.fn_bi_obtener_ingresos', N'FN') IS NOT NULL
+    DROP FUNCTION SQL_NOOBS.fn_bi_obtener_ingresos
 GO
 
 IF object_id(N'SQL_NOOBS.fn_BI_obtener_costo_mantenimiento', N'FN') IS NOT NULL
@@ -359,6 +375,7 @@ CREATE TABLE SQL_NOOBS.BI_hechos_viajes(
  camion_id nvarchar(255) REFERENCES SQL_NOOBS.BI_dimension_camion,
  consumo_combustible decimal (18, 2) NULL,
  cantidad_paquetes int NULL,
+ precio_total_por_tipo decimal (18,2) NULL
  PRIMARY KEY (chofer_id, recorrido_id, tipo_paquete_id, modelo_id, tiempo_id, camion_id, fecha_inicio, fecha_fin)
 )
 GO
@@ -414,6 +431,39 @@ BEGIN
 	declare @mano_de_obra int 
 	select @mano_de_obra = costo_hora from SQL_NOOBS.BI_dimension_mecanico where @mecanico_dni = dni
 	return @costo + @mano_de_obra * @dias
+END
+GO
+
+CREATE FUNCTION SQL_NOOBS.fn_bi_obtener_costos_camion (@camion as nvarchar(255))
+RETURNS decimal(10,2)
+AS
+BEGIN
+	declare @costo_mantenimiento int
+	declare @costo_viaje int
+	declare @costo_combustible_litro int =100
+	declare @horas_por_dia int = 8
+	select @costo_viaje = SUM(c.costo_hora*DATEDIFF(day,v.fecha_inicio,v.fecha_fin)*@horas_por_dia
+			+v.consumo_combustible*@costo_combustible_litro) 
+	from SQL_NOOBS.BI_dimension_chofer c 
+		join SQL_NOOBS.BI_hechos_viajes v on (v.chofer_id = c.dni)
+		where camion_id=@camion
+		group by fecha_inicio,fecha_fin
+
+	select @costo_mantenimiento= sum(hect.costo)
+	from SQL_NOOBS.BI_hechos_trabajo hect join SQL_NOOBS.BI_dimension_tiempo dimt on (hect.tiempo_id = dimt.id)
+	where hect.camion_id=@camion
+	group by hect.camion_id
+
+	return @costo_mantenimiento + @costo_viaje
+END
+GO
+
+CREATE FUNCTION SQL_NOOBS.fn_bi_obtener_ingresos (@camion as nvarchar(255))
+RETURNS decimal(10,2)
+AS
+BEGIN	
+	return (select SUM(v.precio_total_por_tipo) from SQL_NOOBS.BI_hechos_viajes v	
+	where camion_id = @camion)
 END
 GO
 
@@ -637,7 +687,7 @@ CREATE PROCEDURE SQL_NOOBS.insert_BI_hechos_viajes
 AS
 BEGIN
 	INSERT INTO SQL_NOOBS.BI_hechos_viajes (chofer_id,recorrido_id,tipo_paquete_id, modelo_id, 
-				tiempo_id,fecha_inicio,v.fecha_fin, camion_id, consumo_combustible, cantidad_paquetes)
+				tiempo_id,fecha_inicio,v.fecha_fin, camion_id, consumo_combustible, cantidad_paquetes, precio_total_por_tipo)
 		SELECT 
 			v.chofer_id, 
 			v.recorrido_id, 
@@ -648,7 +698,8 @@ BEGIN
 			v.fecha_fin,
 			ca.patente,
 			v.consumo_combustible,
-			p.cantidad
+			p.cantidad,
+			p.precio*p.cantidad
 		from SQL_NOOBS.viaje v join SQL_NOOBS.paquete p on (v.id = p.viaje_id)
 		join SQL_NOOBS.camion ca on (v.camion_id = ca.patente)
 END
@@ -769,4 +820,24 @@ where txm.material_id in (select top 10 material_id
     order by sum(cantidad_material) desc)
 group by t.taller_id , txm.material_id
 GO
+
+--ganancia por camion
+CREATE VIEW SQL_NOOBS.vw_ganancia_por_camion (patente,ganancia)
+as
+select patente, SQL_NOOBS.fn_bi_obtener_ingresos(patente)-SQL_NOOBS.fn_bi_obtener_costos_camion(patente) 'ganancia'
+from SQL_NOOBS.BI_dimension_camion 
+with check option
+GO
+
+--Costo promedio por rango etario de chofer
+CREATE VIEW SQL_NOOBS.vw_costo_por_rango_etario ([rango edad], [costo promedio])
+AS
+SELECT  ra_ed.rango, AVG(costo_hora)
+FROM SQL_noobs.BI_dimension_chofer chofer
+INNER JOIN SQL_NOOBS.BI_rango_edad ra_ed
+    ON chofer.rango_edad_id = ra_ed.id
+GROUP BY ra_ed.rango
+WITH CHECK OPTION 
+GO
+
 
