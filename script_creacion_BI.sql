@@ -6,6 +6,10 @@ GO
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].vw_mantenimiento') AND type = 'V')
 	DROP VIEW [SQL_NOOBS].vw_mantenimiento
 	GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].vw_dias_sin_trabajar') AND type = 'V')
+	DROP VIEW [SQL_NOOBS].vw_dias_sin_trabajar
+	GO
 	
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].vw_costo_por_rango_etario') AND type = 'V')
 DROP VIEW [SQL_NOOBS].vw_costo_por_rango_etario
@@ -104,6 +108,10 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[SQL_NOOBS].B
 
 IF object_id(N'SQL_NOOBS.fn_BI_buscar_pk_rango', N'FN') IS NOT NULL
     DROP FUNCTION SQL_NOOBS.fn_BI_buscar_pk_rango
+GO
+
+IF object_id(N'SQL_NOOBS.fn_dias_sin_trabajar', N'FN') IS NOT NULL
+    DROP FUNCTION SQL_NOOBS.fn_dias_sin_trabajar
 GO
 
 IF object_id(N'SQL_NOOBS.fn_bi_obtener_costos_camion', N'FN') IS NOT NULL
@@ -381,6 +389,29 @@ CREATE TABLE SQL_NOOBS.BI_hechos_viajes(
 GO
 
 -- CREACION FUNCIONES 
+CREATE FUNCTION SQL_NOOBS.fn_dias_sin_trabajar (@camion as nvarchar(255),@tiempo_id int)
+RETURNS int
+AS
+BEGIN	
+	DECLARE @numero_orden int
+	DECLARE @dias int = 0
+	DECLARE cursor_ordenes CURSOR
+	for	(select distinct orden_trabajo_id from SQL_NOOBS.BI_hechos_trabajo
+		where camion_id = @camion and tiempo_id = @tiempo_id)
+	open cursor_ordenes
+	fetch cursor_ordenes into @numero_orden
+	while @@FETCH_STATUS = 0
+	begin
+		select top 1 @dias = @dias+tiempo_real_dias from SQL_NOOBS.BI_hechos_trabajo
+		where orden_trabajo_id = @numero_orden
+		fetch cursor_ordenes into @numero_orden
+	end
+	close cursor_ordenes
+	deallocate cursor_ordenes
+	return @dias
+END
+GO
+
 CREATE FUNCTION SQL_NOOBS.fn_BI_buscar_pk_rango  (@diferencia_edad AS int)
 RETURNS int
 AS
@@ -769,6 +800,14 @@ GO
 
 --CREACION DE VISTAS
 
+--dias sin trabajar de cada camion por cuatrimestre
+CREATE VIEW SQL_NOOBS.vw_dias_sin_trabajar (camion_id, tiempo_id, dias_sin_trabajar)
+AS
+select distinct camion_id, tiempo_id, SQL_NOOBS.fn_dias_sin_trabajar (camion_id,tiempo_id)
+from SQL_NOOBS.BI_hechos_trabajo
+WITH CHECK OPTION 
+GO
+
 --Costo total de mantenimiento por camión, por taller, por cuatrimestre
 CREATE VIEW SQL_NOOBS.vw_mantenimiento (taller, camion, cuatrimestre, costo_mantenimiento)
 	as
@@ -839,5 +878,7 @@ INNER JOIN SQL_NOOBS.BI_rango_edad ra_ed
 GROUP BY ra_ed.rango
 WITH CHECK OPTION 
 GO
+
+
 
 
