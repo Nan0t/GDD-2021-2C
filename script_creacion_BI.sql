@@ -133,6 +133,15 @@ GO
 IF object_id(N'SQL_NOOBS.fn_bi_obtener_costo_tarea', N'FN') IS NOT NULL
     DROP FUNCTION SQL_NOOBS.fn_bi_obtener_costo_tarea
 GO
+
+IF object_id(N'SQL_NOOBS.fn_bi_obtener_id_rango_edad_mecanico', N'FN') IS NOT NULL
+    DROP FUNCTION SQL_NOOBS.fn_bi_obtener_id_rango_edad_mecanico
+GO
+
+IF object_id(N'SQL_NOOBS.fn_bi_obtener_id_rango_edad_chofer', N'FN') IS NOT NULL
+    DROP FUNCTION SQL_NOOBS.fn_bi_obtener_id_rango_edad_chofer
+GO
+
 --DROP DE SP SI EXISTEN (POR SI SE HACEN CAMBIOS) 
 IF EXISTS (select * from dbo.sysobjects where id = object_id(N'[SQL_NOOBS].[insert_BI_dimension_recorrido]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
 DROP PROCEDURE SQL_NOOBS.insert_BI_dimension_recorrido
@@ -362,29 +371,29 @@ CREATE TABLE SQL_NOOBS.BI_hechos_trabajo(
  modelo_id int REFERENCES SQL_NOOBS.BI_dimension_modelo,
  tiempo_id int REFERENCES SQL_NOOBS.BI_dimension_tiempo,
  orden_trabajo_id int REFERENCES SQL_NOOBS.BI_dimension_orden_trabajo,
- mecanico_id decimal(18,0) REFERENCES SQL_NOOBS.BI_dimension_mecanico,
+ rango_edad_mecanico_id int REFERENCES SQL_NOOBS.BI_rango_edad,
  camion_id nvarchar(255) REFERENCES SQL_NOOBS.BI_dimension_camion,
  costo decimal (10,2) NULL,
  tiempo_real_dias int NULL,
  fecha_inicio_real datetime2(3) ,
  fecha_fin_real datetime2(3),
- PRIMARY KEY (codigo_tarea, tipo_tarea_id, taller_id, modelo_id, tiempo_id, orden_trabajo_id, mecanico_id, camion_id)
+ PRIMARY KEY (codigo_tarea, tipo_tarea_id, taller_id, modelo_id, tiempo_id, orden_trabajo_id, rango_edad_mecanico_id, camion_id)
 )
 GO
 
 CREATE TABLE SQL_NOOBS.BI_hechos_viajes(
- chofer_id decimal (18, 0) REFERENCES SQL_NOOBS.BI_dimension_chofer,
+ rango_edad_chofer_id int REFERENCES SQL_NOOBS.BI_rango_edad,
  recorrido_id int REFERENCES SQL_NOOBS.BI_dimension_recorrido,
- tipo_paquete_id int REFERENCES SQL_NOOBS.BI_dimension_tipo_paquete,
  modelo_id int REFERENCES SQL_NOOBS.BI_dimension_modelo,
  tiempo_id int REFERENCES SQL_NOOBS.BI_dimension_tiempo,
  fecha_inicio datetime2(7)  ,
  fecha_fin datetime2(3),
  camion_id nvarchar(255) REFERENCES SQL_NOOBS.BI_dimension_camion,
- consumo_combustible decimal (18, 2) NULL,
+ costo_combustible decimal (18, 2) NULL,
  cantidad_paquetes int NULL,
- precio_total_por_tipo decimal (18,2) NULL
- PRIMARY KEY (chofer_id, recorrido_id, tipo_paquete_id, modelo_id, tiempo_id, camion_id, fecha_inicio, fecha_fin)
+ precio_total_por_tipo decimal (18,2) NULL,
+ costo_chofer decimal (18,2) NULL
+ PRIMARY KEY (rango_edad_chofer_id, recorrido_id, modelo_id, tiempo_id, camion_id, fecha_inicio, fecha_fin)
 )
 GO
 
@@ -460,7 +469,7 @@ BEGIN
 	declare @costo decimal(10,2)
 	select @costo = costo from SQL_NOOBS.BI_dimension_tarea where codigo = @tarea_id
 	declare @mano_de_obra int 
-	select @mano_de_obra = costo_hora from SQL_NOOBS.BI_dimension_mecanico where @mecanico_dni = dni
+	select @mano_de_obra = costo_hora from SQL_NOOBS.mecanico where @mecanico_dni = dni
 	return @costo + @mano_de_obra * @dias
 END
 GO
@@ -473,12 +482,10 @@ BEGIN
 	declare @costo_viaje int
 	declare @costo_combustible_litro int =100
 	declare @horas_por_dia int = 8
-	select @costo_viaje = SUM(c.costo_hora*DATEDIFF(day,v.fecha_inicio,v.fecha_fin)*@horas_por_dia
-			+v.consumo_combustible*@costo_combustible_litro) 
-	from SQL_NOOBS.BI_dimension_chofer c 
-		join SQL_NOOBS.BI_hechos_viajes v on (v.chofer_id = c.dni)
-		where camion_id=@camion
-		group by fecha_inicio,fecha_fin
+	select @costo_viaje = SUM(v.costo_chofer+v.costo_combustible) 
+	from SQL_NOOBS.BI_hechos_viajes v
+	where camion_id=@camion
+	group by fecha_inicio,fecha_fin
 
 	select @costo_mantenimiento= sum(hect.costo)
 	from SQL_NOOBS.BI_hechos_trabajo hect join SQL_NOOBS.BI_dimension_tiempo dimt on (hect.tiempo_id = dimt.id)
@@ -498,6 +505,37 @@ BEGIN
 END
 GO
 
+CREATE FUNCTION SQL_NOOBS.fn_bi_obtener_id_rango_edad_mecanico (@dni_mecanico as decimal(18,0))
+RETURNS int
+AS
+BEGIN
+	DECLARE @edad AS int
+	SET @edad = (SELECT DATEDIFF(year, fecha_nacimiento, GETDATE()) FROM SQL_NOOBS.mecanico WHERE dni = @dni_mecanico )
+  RETURN (SELECT
+	CASE
+		WHEN @edad BETWEEN 18 AND 30 THEN (SELECT id FROM BI_rango_edad WHERE rango LIKE '18 - 30 años' )
+		WHEN @edad BETWEEN 31 AND 50 THEN (SELECT id FROM BI_rango_edad WHERE rango LIKE '31 – 50 años' )
+		ELSE (SELECT id FROM BI_rango_edad WHERE rango LIKE '> 50 años' )
+	END
+	)
+END
+GO
+
+CREATE FUNCTION SQL_NOOBS.fn_bi_obtener_id_rango_edad_chofer (@dni_chofer as decimal(18,0))
+RETURNS int
+AS
+BEGIN
+	DECLARE @edad AS int
+	SET @edad = (SELECT DATEDIFF(year, fecha_nacimiento, GETDATE()) FROM SQL_NOOBS.chofer WHERE dni = @dni_chofer )
+  RETURN (SELECT
+	CASE
+		WHEN @edad BETWEEN 18 AND 30 THEN (SELECT id FROM BI_rango_edad WHERE rango LIKE '18 - 30 años' )
+		WHEN @edad BETWEEN 31 AND 50 THEN (SELECT id FROM BI_rango_edad WHERE rango LIKE '31 – 50 años' )
+		ELSE (SELECT id FROM BI_rango_edad WHERE rango LIKE '> 50 años' )
+	END
+	)
+END
+GO
 -- CREACION DE SP
 CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_material
 AS
@@ -600,27 +638,6 @@ BEGIN
 END
 GO
 
-
-
-CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_chofer
-AS
-BEGIN 
-	INSERT INTO SQL_NOOBS.BI_dimension_chofer (dni, nombre, apellido, direccion, telefono, mail, fecha_nacimiento, legajo, costo_hora, rango_edad_id)
-		SELECT dni,
-			nombre,
-			apellido, 
-			direccion, 
-			telefono, 
-			mail, 
-			fecha_nacimiento, 
-			legajo, 
-			costo_hora,
-			SQL_NOOBS.fn_BI_buscar_pk_rango(DATEDIFF(year, fecha_nacimiento, GETDATE()))
-		FROM 
-			SQL_NOOBS.chofer
-END
-GO
-
 CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_modelo
 AS
 BEGIN 
@@ -655,26 +672,6 @@ BEGIN
 				ciudad
 		FROM 
 				SQL_NOOBS.taller
-END
-GO
-
-CREATE PROCEDURE SQL_NOOBS.insert_BI_dimension_mecanico
-AS
-BEGIN
-	INSERT INTO SQL_NOOBS.BI_dimension_mecanico (dni,nombre,apellido,direccion,telefono,mail,fecha_nacimiento,legajo,costo_hora, rango_edad_id)
-		SELECT 
-				dni, 
-				nombre, 
-				apellido, 
-				direccion, 
-				telefono, 
-				mail, 
-				fecha_nacimiento, 
-				legajo, 
-				costo_hora,
-				SQL_NOOBS.fn_BI_buscar_pk_rango(DATEDIFF(year, fecha_nacimiento, GETDATE()))
-		FROM 
-				SQL_NOOBS.mecanico
 END
 GO
 
@@ -717,22 +714,24 @@ GO
 CREATE PROCEDURE SQL_NOOBS.insert_BI_hechos_viajes
 AS
 BEGIN
-	INSERT INTO SQL_NOOBS.BI_hechos_viajes (chofer_id,recorrido_id,tipo_paquete_id, modelo_id, 
-				tiempo_id,fecha_inicio,v.fecha_fin, camion_id, consumo_combustible, cantidad_paquetes, precio_total_por_tipo)
+	INSERT INTO SQL_NOOBS.BI_hechos_viajes (rango_edad_chofer_id,recorrido_id, modelo_id, 
+				tiempo_id,fecha_inicio,v.fecha_fin, camion_id, costo_combustible, cantidad_paquetes, precio_total_por_tipo, costo_chofer)
 		SELECT 
-			v.chofer_id, 
+			SQL_NOOBS.fn_bi_obtener_id_rango_edad_chofer(v.chofer_id), 
 			v.recorrido_id, 
-			p.tipo_paquete_id, 
 			ca.modelo_id,
 			SQL_NOOBS.fn_BI_obtener_dim_tiempo(v.fecha_inicio),
 			v.fecha_inicio,
 			v.fecha_fin,
 			ca.patente,
-			v.consumo_combustible,
-			p.cantidad,
-			p.precio*p.cantidad
+			v.consumo_combustible* 100,
+			SUM(p.cantidad),
+			SUM(p.precio*p.cantidad),
+			chofer.costo_hora*DATEDIFF(day,v.fecha_inicio,v.fecha_fin)*8
 		from SQL_NOOBS.viaje v join SQL_NOOBS.paquete p on (v.id = p.viaje_id)
 		join SQL_NOOBS.camion ca on (v.camion_id = ca.patente)
+		join SQL_NOOBS.chofer chofer on v.chofer_id = chofer.dni
+		GROUP BY v.recorrido_id, v.fecha_inicio, v.fecha_fin, ca.patente, v.consumo_combustible, v.chofer_id, ca.modelo_id, chofer.costo_hora
 END
 GO
 
@@ -740,7 +739,7 @@ CREATE PROCEDURE SQL_NOOBS.insert_BI_hechos_trabajo
 AS
 BEGIN
 	INSERT INTO SQL_NOOBS.BI_hechos_trabajo 
-	(codigo_tarea, tipo_tarea_id, taller_id, modelo_id, tiempo_id, orden_trabajo_id, mecanico_id, camion_id,
+	(codigo_tarea, tipo_tarea_id, taller_id, modelo_id, tiempo_id, orden_trabajo_id, rango_edad_mecanico_id, camion_id,
  	costo, tiempo_real_dias, fecha_inicio_real, fecha_fin_real)
 	 SELECT 
 	 	tarea.codigo,
@@ -749,9 +748,9 @@ BEGIN
 		camion.modelo_id,
 		SQL_NOOBS.fn_BI_obtener_dim_tiempo(tatr.fecha_inicio_real),
 		tatr.orden_trabajo_id,
-		tatr.mecanico_dni,
+		SQL_NOOBS.fn_bi_obtener_id_rango_edad_mecanico(tatr.mecanico_dni),
 		camion.patente,
-		SQL_NOOBS.fn_bi_obtener_costo_mantenimiento (tarea.codigo,tatr.mecanico_dni ,tatr.tiempo_real_dias ),
+		SUM(SQL_NOOBS.fn_bi_obtener_costo_mantenimiento (tarea.codigo,tatr.mecanico_dni ,tatr.tiempo_real_dias )),
 		tatr.tiempo_real_dias,
 		tatr.fecha_inicio_real,
 		tatr.fecha_fin_real
@@ -764,12 +763,22 @@ BEGIN
 	 	ON or_tr.camion_id = camion.patente
 	 INNER JOIN SQL_NOOBS.mecanico meca
 	 	ON tatr.mecanico_dni = meca.dni
+	GROUP BY tarea.codigo,
+		tarea.tipo_tarea_id,
+		meca.taller_id,
+		camion.modelo_id,
+		tatr.fecha_inicio_real,
+		tatr.orden_trabajo_id,
+		SQL_NOOBS.fn_bi_obtener_id_rango_edad_mecanico(tatr.mecanico_dni),
+		camion.patente,
+		tatr.tiempo_real_dias,
+		tatr.fecha_inicio_real,
+		tatr.fecha_fin_real
 END
 GO
 
 EXEC SQL_NOOBS.insert_BI_dimension_tiempo
 EXEC SQL_NOOBS.insert_BI_rango_edad
-EXEC SQL_NOOBS.insert_BI_dimension_chofer
 EXEC SQL_NOOBS.insert_BI_dimension_modelo
 EXEC SQL_NOOBS.insert_BI_dimension_camion
 EXEC SQL_NOOBS.insert_BI_dimension_tipo_paquete
@@ -778,7 +787,6 @@ EXEC SQL_NOOBS.insert_BI_dimension_material
 EXEC SQL_NOOBS.insert_BI_dimension_tarea
 EXEC SQL_NOOBS.insert_BI_tareaXmaterial
 EXEC SQL_NOOBS.insert_BI_dimension_taller
-EXEC SQL_NOOBS.insert_BI_dimension_mecanico
 EXEC SQL_NOOBS.insert_BI_dimension_orden_trabajo
 EXEC SQL_NOOBS.insert_BI_dimension_tipo_tarea
 EXEC SQL_NOOBS.insert_BI_dimension_marca_camion
@@ -790,10 +798,9 @@ GO
 --Facturación total por recorrido por cuatrimestre. (En función de la cantidad y tipo de paquetes que transporta el camión y el recorrido)
 CREATE VIEW SQL_NOOBS.vw_bi_facturacion_total_por_cuatri_y_recorrido (facturacion, año, cuatrimestre, recorrido)
 AS
-SELECT SUM((tp.precio + r.precio)* v.cantidad_paquetes )'facturacion total', t.Año, t.cuatrimestre, r.recorrido_id
+SELECT SUM(precio_total_por_tipo)'facturacion total', t.Año, t.cuatrimestre, r.recorrido_id
 FROM SQL_NOOBS.BI_hechos_viajes v JOIN SQL_NOOBS.BI_dimension_tiempo t on(v.tiempo_id = t.id)
     JOIN SQL_NOOBS.BI_dimension_recorrido r on (r.recorrido_id = v.recorrido_id)
-    JOIN SQL_NOOBS.BI_dimension_tipo_paquete tp on (v.tipo_paquete_id = tp.tipo_paquete_id)  
 group by t.cuatrimestre, r.recorrido_id, t.Año
 WITH CHECK OPTION
 GO
@@ -863,10 +870,10 @@ GO
 --Costo promedio por rango etario de chofer
 CREATE VIEW SQL_NOOBS.vw_costo_por_rango_etario ([rango edad], [costo promedio])
 AS
-SELECT  ra_ed.rango, AVG(costo_hora)
-FROM SQL_noobs.BI_dimension_chofer chofer
+SELECT  ra_ed.rango, AVG(vi.costo_chofer)
+FROM SQL_noobs.BI_hechos_viajes vi
 INNER JOIN SQL_NOOBS.BI_rango_edad ra_ed
-    ON chofer.rango_edad_id = ra_ed.id
+    ON vi.rango_edad_chofer_id = ra_ed.id
 GROUP BY ra_ed.rango
 WITH CHECK OPTION 
 GO
