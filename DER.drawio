@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2021-12-06T03:52:47.557Z" agent="5.0 (Windows)" etag="nUyY-F02zpMk8bNevXDK" version="15.8.2" type="github" pages="5">
+<mxfile host="app.diagrams.net" modified="2021-12-06T03:54:23.451Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36" etag="ChdWuAaE-EVPFEcHGHJX" version="15.9.1" type="github" pages="5">
   <diagram id="R2lEEEUBdFMjLlhIrx00" name="Entidades básicas">
-    <mxGraphModel dx="1422" dy="752" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="15000" pageHeight="100000" math="0" shadow="0" extFonts="Permanent Marker^https://fonts.googleapis.com/css?family=Permanent+Marker">
+    <mxGraphModel dx="868" dy="450" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="15000" pageHeight="100000" math="0" shadow="0" extFonts="Permanent Marker^https://fonts.googleapis.com/css?family=Permanent+Marker">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -3191,7 +3191,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="IKd0WOz_jqeccw2qe-dH" name="DER- BI">
-    <mxGraphModel dx="1422" dy="752" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="5000" pageHeight="5000" math="0" shadow="0">
+    <mxGraphModel dx="868" dy="450" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="5000" pageHeight="5000" math="0" shadow="0">
       <root>
         <mxCell id="Ofkc89xWVs2ZMS6IX_Jj-0" />
         <mxCell id="Ofkc89xWVs2ZMS6IX_Jj-1" parent="Ofkc89xWVs2ZMS6IX_Jj-0" />
@@ -4654,7 +4654,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="TXzyI6OGBazvnjF6Vfpj" name="Page-5">
-    <mxGraphModel dx="189" dy="792" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+    <mxGraphModel dx="-301" dy="450" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="oR1IEg8jjov79uuACvQa-0" />
         <mxCell id="oR1IEg8jjov79uuACvQa-1" parent="oR1IEg8jjov79uuACvQa-0" />
@@ -5183,7 +5183,7 @@
             <mxRectangle width="60" height="30" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="uRHS7VecGIs45E53P1qM-150" value="rango_edad int NOT NULL" style="shape=partialRectangle;connectable=0;fillColor=none;top=0;left=0;bottom=0;right=0;align=left;spacingLeft=6;fontStyle=1;overflow=hidden;" parent="uRHS7VecGIs45E53P1qM-148" vertex="1">
+        <mxCell id="uRHS7VecGIs45E53P1qM-150" value="rango_edad_id int NOT NULL" style="shape=partialRectangle;connectable=0;fillColor=none;top=0;left=0;bottom=0;right=0;align=left;spacingLeft=6;fontStyle=1;overflow=hidden;" parent="uRHS7VecGIs45E53P1qM-148" vertex="1">
           <mxGeometry x="60" width="270" height="30" as="geometry">
             <mxRectangle width="270" height="30" as="alternateBounds" />
           </mxGeometry>
